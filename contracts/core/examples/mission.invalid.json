@@ -1,0 +1,129 @@
+{
+  "description": "Casos invalidos para mission.schema.json y checkpoint.schema.json. Cada caso documenta las causas esperadas de rechazo.",
+  "test_cases": [
+    {
+      "id": "MINV-001",
+      "description": "Falta mission_id, estado inventado, brief_version 0, campo chain_of_thought prohibido.",
+      "schema": "mission",
+      "expected_errors": [
+        "mission_id es requerido pero falta",
+        "current_state no pertenece a los 15 estados aprobados",
+        "brief_version debe ser >= 1 pero es 0",
+        "chain_of_thought es campo adicional prohibido"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "user_id": "USR-001",
+        "title": "Mision de prueba invalida",
+        "brief_version": 0,
+        "current_state": "ESTADO_INVENTADO",
+        "chain_of_thought": "Este campo esta prohibido y debe ser rechazado",
+        "counters": { "clarification_cycles": 0, "task_reasoning_attempts": 0, "transient_retries": 0, "vbp_correction_rounds": 0, "agent_requests": 0 },
+        "limits": { "max_clarification_cycles": 3, "max_task_reasoning_attempts": 2, "max_transient_retries": 1, "max_vbp_correction_rounds": 2, "max_concurrent_missions": 1, "max_concurrent_agents": 1, "max_recursive_decomposition": 0, "max_agent_execution_seconds": 300, "max_mission_seconds": 1200, "max_agent_requests_per_mission": 15, "max_budget_usd": 25 },
+        "approval_refs": [],
+        "created_at": "2026-08-28T03:00:00-05:00",
+        "updated_at": "2026-08-28T03:00:00-05:00",
+        "record_version": 1
+      }
+    },
+    {
+      "id": "MINV-002",
+      "description": "Estado BLOQUEADA con resumable_state null — viola la regla que exige resumable_state no null cuando BLOQUEADA.",
+      "schema": "mission",
+      "expected_errors": [
+        "resumable_state es null pero debe ser un estado valido cuando current_state es BLOQUEADA"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "mission_id": "MSN-BLOCK-001",
+        "user_id": "USR-001",
+        "title": "Mision bloqueada sin estado reanudable",
+        "brief_version": 1,
+        "current_state": "BLOQUEADA",
+        "resumable_state": null,
+        "counters": { "clarification_cycles": 0, "task_reasoning_attempts": 0, "transient_retries": 0, "vbp_correction_rounds": 0, "agent_requests": 0 },
+        "limits": { "max_clarification_cycles": 3, "max_task_reasoning_attempts": 2, "max_transient_retries": 1, "max_vbp_correction_rounds": 2, "max_concurrent_missions": 1, "max_concurrent_agents": 1, "max_recursive_decomposition": 0, "max_agent_execution_seconds": 300, "max_mission_seconds": 1200, "max_agent_requests_per_mission": 15, "max_budget_usd": 25 },
+        "approval_refs": [],
+        "created_at": "2026-08-28T03:00:00-05:00",
+        "updated_at": "2026-08-28T03:00:00-05:00",
+        "record_version": 1
+      }
+    },
+    {
+      "id": "MINV-003",
+      "description": "Checkpoint en estado PAUSADA con resumable_state null — el checkpoint debe tener estado reanudable cuando PAUSADA.",
+      "schema": "checkpoint",
+      "expected_errors": [
+        "resumable_state es null pero state es PAUSADA"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "checkpoint_id": "CP-INV-001",
+        "mission_id": "MSN-001",
+        "mission_version": 1,
+        "state": "PAUSADA",
+        "resumable_state": null,
+        "tasks": [],
+        "dependencies": [],
+        "attempts": { "clarification_cycles": 0, "task_reasoning_attempts": 0, "transient_retries": 0, "vbp_correction_rounds": 0, "agent_requests": 0 },
+        "budgets_consumed": { "elapsed_mission_seconds": 0, "budget_usd_spent": 0 },
+        "artifacts": [],
+        "authorizations": [],
+        "timestamp": "2026-08-28T03:00:00-05:00",
+        "fingerprint": "fp-test",
+        "idempotency_key": "idem-cp-inv-001"
+      }
+    },
+    {
+      "id": "MINV-004",
+      "description": "Checkpoint con tarea en estado invalido y campo internal_reasoning prohibido.",
+      "schema": "checkpoint",
+      "expected_errors": [
+        "ESTADO_INVALIDO no pertenece a los 8 estados de tarea",
+        "internal_reasoning es campo adicional prohibido"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "checkpoint_id": "CP-INV-002",
+        "mission_id": "MSN-001",
+        "mission_version": 1,
+        "state": "BORRADOR",
+        "resumable_state": null,
+        "tasks": [
+          { "task_id": "TSK-001", "state": "ESTADO_INVALIDO", "attempts": 0 }
+        ],
+        "dependencies": [],
+        "attempts": { "clarification_cycles": 0, "task_reasoning_attempts": 0, "transient_retries": 0, "vbp_correction_rounds": 0, "agent_requests": 0 },
+        "budgets_consumed": { "elapsed_mission_seconds": 0, "budget_usd_spent": 0 },
+        "artifacts": [],
+        "authorizations": [],
+        "timestamp": "2026-08-28T03:00:00-05:00",
+        "fingerprint": "fp-test",
+        "idempotency_key": "idem-cp-inv-002",
+        "internal_reasoning": "Este campo esta prohibido"
+      }
+    },
+    {
+      "id": "MINV-005",
+      "description": "Referencia a estado inexistente en current_state.",
+      "schema": "mission",
+      "expected_errors": [
+        "ESTADO_QUE_NO_EXISTE no pertenece al enum de 15 estados"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "mission_id": "MSN-REF-001",
+        "user_id": "USR-001",
+        "title": "Mision con estado roto",
+        "brief_version": 1,
+        "current_state": "ESTADO_QUE_NO_EXISTE",
+        "counters": { "clarification_cycles": 0, "task_reasoning_attempts": 0, "transient_retries": 0, "vbp_correction_rounds": 0, "agent_requests": 0 },
+        "limits": { "max_clarification_cycles": 3, "max_task_reasoning_attempts": 2, "max_transient_retries": 1, "max_vbp_correction_rounds": 2, "max_concurrent_missions": 1, "max_concurrent_agents": 1, "max_recursive_decomposition": 0, "max_agent_execution_seconds": 300, "max_mission_seconds": 1200, "max_agent_requests_per_mission": 15, "max_budget_usd": 25 },
+        "approval_refs": [],
+        "created_at": "2026-08-28T03:00:00-05:00",
+        "updated_at": "2026-08-28T03:00:00-05:00",
+        "record_version": 1
+      }
+    }
+  ]
+}

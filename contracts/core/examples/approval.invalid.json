@@ -1,0 +1,192 @@
+{
+  "description": "Casos invalidos para approval.schema.json. Cada caso documenta la causa exacta de rechazo.",
+  "test_cases": [
+    {
+      "id": "AINV-001",
+      "description": "Decision invalida ACEPTAR y campo scratchpad prohibido.",
+      "expected_errors": [
+        "decision ACEPTAR no pertenece al enum de decisiones validas",
+        "scratchpad es campo adicional prohibido"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-001",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_v2",
+        "version_or_fingerprint": "v2-sha256-def456",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "ACEPTAR",
+        "comment": "",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-001",
+        "scratchpad": "Este campo esta prohibido"
+      }
+    },
+    {
+      "id": "AINV-002",
+      "description": "Actor no humano — actor_role es chief_of_staff en vez de usuario_humano.",
+      "expected_errors": [
+        "actor_role debe ser exactamente usuario_humano"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-002",
+        "user_id": "USR-001",
+        "actor": "chief_of_staff_agent",
+        "actor_role": "chief_of_staff",
+        "action_approved": "plan_v1",
+        "version_or_fingerprint": "v1-sha256-abc",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "APROBAR",
+        "comment": "Aprobado por agente.",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-002"
+      }
+    },
+    {
+      "id": "AINV-003",
+      "description": "Rechazo sin motivo — RECHAZAR con comentario vacio.",
+      "expected_errors": [
+        "comment debe tener al menos un caracter no espacio cuando decision es RECHAZAR"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-003",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "vbp_v1",
+        "version_or_fingerprint": "vbp-v1-sha256",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "RECHAZAR",
+        "comment": "",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-003"
+      }
+    },
+    {
+      "id": "AINV-004",
+      "description": "Excepcion sin condiciones — APROBAR_CON_EXCEPCION con array conditions vacio.",
+      "expected_errors": [
+        "conditions debe tener al menos una condicion no vacia cuando decision es APROBAR_CON_EXCEPCION"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-004",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_v3",
+        "version_or_fingerprint": "v3-sha256",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "APROBAR_CON_EXCEPCION",
+        "comment": "Aprobado con excepcion pero sin condiciones.",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-004"
+      }
+    },
+    {
+      "id": "AINV-005",
+      "description": "PENDIENTE con decision no nula — violation de estructura: PENDIENTE exige decision null.",
+      "note": "Documenta la restriccion de estructura (JSON Schema). No es una prueba de doble respuesta sobre un registro CONSUMIDA; esa restriccion es de ciclo de vida entre registros.",
+      "expected_errors": [
+        "PENDIENTE requiere decision null"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-005",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_v1",
+        "version_or_fingerprint": "v1-sha256",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "APROBAR",
+        "comment": "Intento de rellenar decision mientras esta PENDIENTE.",
+        "conditions": [],
+        "expiration": null,
+        "status": "PENDIENTE",
+        "idempotency_key": "idem-ainv-005"
+      }
+    },
+    {
+      "id": "AINV-006",
+      "description": "CONSUMIDA sin decision — intento de consumir sin decidir.",
+      "expected_errors": [
+        "CONSUMIDA requiere decision valida, no null"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-006",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_v1",
+        "version_or_fingerprint": "v1-sha256",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": null,
+        "comment": "",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-006"
+      }
+    },
+    {
+      "id": "AINV-007",
+      "description": "SOLICITAR_CAMBIOS con comentario solo espacios — el patron exige al menos un caracter no espacio.",
+      "expected_errors": [
+        "comment no cumple el patron de al menos un caracter no espacio"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-007",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "vbp_v2",
+        "version_or_fingerprint": "vbp-v2-sha256",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "SOLICITAR_CAMBIOS",
+        "comment": "     ",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-ainv-007"
+      }
+    },
+    {
+      "id": "AINV-008",
+      "description": "EXPIRADA sin expiration — EXPIRADA exige expiration no null.",
+      "expected_errors": [
+        "EXPIRADA requiere expiration no null (fecha en que se alcanzo la expiracion)"
+      ],
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-INV-008",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_v4",
+        "version_or_fingerprint": "v4-sha256",
+        "timestamp": "2026-08-20T07:00:00-05:00",
+        "decision": null,
+        "comment": "",
+        "conditions": [],
+        "expiration": null,
+        "status": "EXPIRADA",
+        "idempotency_key": "idem-ainv-008"
+      }
+    }
+  ]
+}

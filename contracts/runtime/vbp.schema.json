@@ -1,0 +1,716 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/runtime/vbp.schema.json",
+  "title": "Estructura de Ensamblaje Interno de VBP de OminAI HQ",
+  "description": "Contrato para la estructura de ensamblaje interno del Venture Build Package (VBP) conforme a CONTRATO-MVP-v1.md secciones 6.1 y 6.2. Describe el manifest y las 18 secciones obligatorias; el artefacto canonico exportable es un unico documento Markdown.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "vbp_approval_status": {
+      "type": "string",
+      "enum": [
+        "BORRADOR",
+        "EN_REVISION",
+        "APROBADO",
+        "RECHAZADO",
+        "APROBADO_CON_EXCEPCION"
+      ]
+    },
+    "agent_role": {
+      "type": "string",
+      "enum": [
+        "chief_of_staff",
+        "research_evidence_analyst",
+        "product_architect",
+        "delivery_planner",
+        "governance_risk",
+        "usuario_humano",
+        "sistema"
+      ]
+    },
+    "section_status": {
+      "type": "string",
+      "enum": [
+        "COMPLETA",
+        "PENDIENTE"
+      ]
+    },
+    "vbp_section": {
+      "type": "object",
+      "required": [
+        "section_number",
+        "section_name",
+        "status",
+        "responsible_role",
+        "content"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "section_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18
+        },
+        "section_name": {
+          "type": "string",
+          "enum": [
+            "Mision",
+            "Problema y oportunidad",
+            "Usuario objetivo",
+            "Propuesta de valor",
+            "Evidencia",
+            "Supuestos",
+            "Alcance incluido",
+            "Alcance excluido",
+            "Requisitos funcionales",
+            "Requisitos no funcionales",
+            "Recorrido principal",
+            "Fases, tareas y dependencias",
+            "Riesgos, mitigaciones y disparadores",
+            "Metricas",
+            "Decisiones tomadas",
+            "Decisiones pendientes",
+            "Aprobaciones",
+            "Historial de trazabilidad"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/section_status"
+        },
+        "responsible_role": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "content": {
+          "type": "string",
+          "description": "Contenido estructurado de la seccion en formato Markdown."
+        },
+        "pending_reason": {
+          "type": "string",
+          "description": "Motivo explicito por el que la seccion esta PENDIENTE; obligatorio no vacio si status es PENDIENTE."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PENDIENTE"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "pending_reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "pending_reason"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "COMPLETA"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 1
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Mision"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 2
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Problema y oportunidad"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 3
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Usuario objetivo"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 4
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Propuesta de valor"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 5
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Evidencia"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 6
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Supuestos"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 7
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Alcance incluido"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 8
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Alcance excluido"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 9
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Requisitos funcionales"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 10
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Requisitos no funcionales"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 11
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Recorrido principal"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 12
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Fases, tareas y dependencias"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 13
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Riesgos, mitigaciones y disparadores"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 14
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Metricas"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 15
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Decisiones tomadas"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 16
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Decisiones pendientes"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 17
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Aprobaciones"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "section_number": {
+                "const": 18
+              }
+            },
+            "required": [
+              "section_number"
+            ]
+          },
+          "then": {
+            "properties": {
+              "section_name": {
+                "const": "Historial de trazabilidad"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "vbp_id",
+    "mission_id",
+    "version",
+    "title",
+    "created_at",
+    "evidence_cutoff_date",
+    "language",
+    "contract_version",
+    "functional_leads",
+    "approval_status",
+    "human_approval_ref",
+    "included_components",
+    "missing_or_error_components",
+    "sections",
+    "fingerprint",
+    "mission_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "vbp_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico e inmutable del paquete VBP."
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la mision que origino el VBP."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Numero de version del paquete VBP."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Titulo del paquete VBP."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora ISO 8601 de creacion del paquete."
+    },
+    "evidence_cutoff_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de corte de la evidencia incorporada."
+    },
+    "language": {
+      "type": "string",
+      "const": "es",
+      "description": "Idioma principal del paquete (espanol)."
+    },
+    "contract_version": {
+      "type": "string",
+      "const": "1.2-aprobada",
+      "description": "Version del contrato rector; independiente de schema_version=1.0.0."
+    },
+    "functional_leads": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Mision",
+        "Problema y oportunidad",
+        "Usuario objetivo",
+        "Propuesta de valor",
+        "Evidencia",
+        "Supuestos",
+        "Alcance incluido",
+        "Alcance excluido",
+        "Requisitos funcionales",
+        "Requisitos no funcionales",
+        "Recorrido principal",
+        "Fases, tareas y dependencias",
+        "Riesgos, mitigaciones y disparadores",
+        "Metricas",
+        "Decisiones tomadas",
+        "Decisiones pendientes",
+        "Aprobaciones",
+        "Historial de trazabilidad"
+      ],
+      "properties": {
+        "Mision": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Problema y oportunidad": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Usuario objetivo": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Propuesta de valor": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Evidencia": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Supuestos": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Alcance incluido": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Alcance excluido": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Requisitos funcionales": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Requisitos no funcionales": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Recorrido principal": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Fases, tareas y dependencias": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Riesgos, mitigaciones y disparadores": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Metricas": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Decisiones tomadas": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Decisiones pendientes": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Aprobaciones": {
+          "$ref": "#/$defs/agent_role"
+        },
+        "Historial de trazabilidad": {
+          "$ref": "#/$defs/agent_role"
+        }
+      },
+      "description": "Responsable funcional por cada una de las 18 secciones; debe coincidir con responsible_role."
+    },
+    "approval_status": {
+      "$ref": "#/$defs/vbp_approval_status"
+    },
+    "human_approval_ref": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Referencia al registro de aprobacion humana si existe; null mientras este en borrador o revision."
+    },
+    "included_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de componentes efectivamente incluidos en el paquete."
+    },
+    "missing_or_error_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Componentes o secciones faltantes o con advertencias identificadas."
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": {
+        "$ref": "#/$defs/vbp_section"
+      },
+      "description": "Las 18 secciones obligatorias del VBP."
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71,
+      "description": "SHA-256 hexadecimal minusculo de JSON ordenado por claves, separadores coma/dos puntos sin espacios, ensure_ascii=true, allow_nan=false, UTF-8. Arrays conservan orden. Ver dominio en app/runtime_contracts.py. Dominio: todos los campos salvo fingerprint, approval_status y human_approval_ref; la decision se verifica separadamente contra el registro nuclear, sin ciclo de autorreferencia."
+    },
+    "mission_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version exacta de la mision suministrada al validador contextual."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "approval_status": {
+            "enum": [
+              "APROBADO",
+              "APROBADO_CON_EXCEPCION",
+              "RECHAZADO"
+            ]
+          }
+        },
+        "required": [
+          "approval_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "human_approval_ref": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$comment": "PZ-003C correccion 1. Validacion estructural no prueba referencias. RuntimeContractsValidator exige contexto en memoria para integridad; no ejecuta ni aprueba."
+}

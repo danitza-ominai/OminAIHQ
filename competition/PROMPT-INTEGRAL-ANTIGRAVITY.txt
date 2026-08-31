@@ -1,0 +1,29 @@
+Actúa en C:\Users\Nivez\Desktop\08_Ominai\OminAIHQ como constructor y corrector de este lote integral de cierre.
+
+Al enviar este mensaje, autorizo excepcionalmente a Antigravity a realizar la construcción pendiente y las correcciones H01–H16 descritas en:
+competition/ENCARGO-INTEGRAL-ANTIGRAVITY-2026-08-31.md, versión 1.
+
+La autorización se limita a los 77 archivos existentes y 11 destinos nuevos enumerados exactamente en su apartado 5; no obliga a modificar todos y no autoriza otros. Este es el encargo conjunto, por bloques secuenciales; no me pidas nuevamente autorización para cada bloque ya cubierto. Sustituye para este cierre la propuesta de ejecutar CIERRE-01 por separado. No cambia permanentemente AGENTS.md ni reinicia contadores de otras correcciones.
+
+Lee completo el encargo, AGENTS.md, TEAM-WORKFLOW.md, el contrato, las fichas pertinentes y los pasajes de REQUISITOS indicados. Distingue reglas oficiales, decisiones del producto, clases y simulaciones. Mantén OminAI HQ separado de Business OS.
+
+Primero captura inventario/hashes y reproduce la suite: baseline observado 280 pruebas, 277 sin fallo/error, 1 fallo y 2 errores. Trabaja sobre la versión actual, sin revertir cambios ajenos.
+
+Orden:
+1. Corregir aprobación que cambia la huella, reescritura de resultados/evidencias al cambiar versión y fallos de auditoría/recuperación. No arreglarlo debilitando tests.
+2. Corregir fuentes, expediente por misión/autorización, archivos/imágenes y evaluación que hoy puede aceptar una trayectoria prohibida.
+3. Implementar Gemini 3.5 Flash con ADK real, cinco roles conectados, VBP derivado de resultados, reservas/costes/reintentos efectivos y modo SIMULADA conservado por separado.
+4. Integrar UI, ES/EN, estados y descarga fiel.
+5. Preparar Cloud Run, Firestore, Cloud Storage, identidad del operador y cuota durable sin exponer datos/autoridad locales.
+6. Actualizar documentación y devolver informe completo a Codex.
+
+No instales, llames modelos, despliegues ni publiques por esta autorización de código. Si esos permisos específicos ya están concedidos para el recurso exacto, respétalos sin volver a pedirlos. Si faltan, termina primero todo lo offline independiente y presenta juntos los comandos, rutas, datos y límites concretos pendientes. No pidas claves por chat ni modifiques el Python de otra aplicación.
+
+No toques contratos aceptados ni archivos fuera de la lista. Si una contradicción contractual impide una solución, explica exactamente cuál; no la ocultes cambiando huellas/historia ni autorices tú una excepción.
+
+Cada bloque exige sus pruebas; cero autoaprobaciones humanas, cero fallback oculto a fixtures, cero CoT/secretos registrados, límites y rollback preservados. No delegues ni permitas editores concurrentes. No conviertas este encargo en reconstrucción completa o ampliación del MVP.
+
+Devuelve competition/RESULTADO-INTEGRAL-ANTIGRAVITY.md con cada H resuelto/parcial/pendiente, archivos, hashes, pruebas/códigos reales, versiones, capturas/evidencia si disponibles, límites y permisos concretos pendientes. No declares listo algo que no se ejecutó.
+
+Al terminar, detente. Codex inspeccionará tu entrega y realizará solo las correcciones posteriores que yo autorice con hallazgos/archivos exactos. Después GitHub Copilot hará únicamente la revisión final, sin editar. La aceptación y el envío final me corresponden.
+

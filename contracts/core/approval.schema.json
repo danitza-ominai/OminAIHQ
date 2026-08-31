@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/core/approval.schema.json",
+  "title": "Aprobacion de OminAI HQ",
+  "description": "Registro de aprobacion humana. actor_role restringido a usuario_humano hace inequivoca la autoridad. JSON Schema valida la estructura y la clave de idempotencia; la prevencion de doble respuesta (un registro CONSUMIDA no puede recibir segunda decision) se aplica mediante el ciclo de vida determinista entre registros, implementado por el runtime. EXPIRADA exige expiration no null. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 6.4 y 10.3.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "approval_decision": {
+      "type": "string",
+      "enum": [
+        "APROBAR",
+        "APROBAR_CON_EXCEPCION",
+        "RECHAZAR",
+        "SOLICITAR_CAMBIOS"
+      ],
+      "description": "Decisiones validas reservadas al usuario humano."
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "approval_id",
+    "user_id",
+    "actor",
+    "actor_role",
+    "action_approved",
+    "version_or_fingerprint",
+    "timestamp",
+    "decision",
+    "comment",
+    "conditions",
+    "expiration",
+    "status",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "approval_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico e inmutable de la aprobacion."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador del usuario humano que registra la aprobacion."
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre o identificador visible del actor humano."
+    },
+    "actor_role": {
+      "const": "usuario_humano",
+      "description": "Unico valor permitido. Hace inequivoca y validable la autoridad humana de toda decision."
+    },
+    "action_approved": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Accion o artefacto que se somete a aprobacion."
+    },
+    "version_or_fingerprint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version exacta o huella del contenido sometido."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del registro ISO 8601."
+    },
+    "decision": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/approval_decision" }
+      ],
+      "description": "Decision emitida. Null mientras status sea PENDIENTE o EXPIRADA. Una aprobacion CONSUMIDA no puede recibir nueva decision; esa restriccion se aplica a nivel de ciclo de vida entre registros."
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comentario del usuario. Obligatorio no vacio cuando decision es RECHAZAR o SOLICITAR_CAMBIOS."
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Condiciones asociadas. Debe contener al menos una condicion no vacia cuando decision es APROBAR_CON_EXCEPCION."
+    },
+    "expiration": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ],
+      "description": "Fecha de expiracion. Null si no expira. Obligatorio no null cuando status es EXPIRADA."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDIENTE", "CONSUMIDA", "EXPIRADA"],
+      "description": "Estado del registro. CONSUMIDA y EXPIRADA son terminales: no regresan a PENDIENTE."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Clave de idempotencia. JSON Schema valida presencia y formato. Misma clave y mismo contenido: no_second_effect y devolucion del resultado existente. Misma clave y contenido diferente: conflict_rejection con INVALID_INPUT."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "PENDIENTE" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "CONSUMIDA" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "$ref": "#/$defs/approval_decision" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "EXPIRADA" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "type": "null" },
+          "expiration": { "type": "string", "format": "date-time" }
+        },
+        "required": ["expiration"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "enum": ["RECHAZAR", "SOLICITAR_CAMBIOS"] }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "comment": { "minLength": 1, "pattern": "\\S" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "APROBAR_CON_EXCEPCION" }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "conditions": {
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1, "pattern": "\\S" }
+          }
+        }
+      }
+    }
+  ]
+}

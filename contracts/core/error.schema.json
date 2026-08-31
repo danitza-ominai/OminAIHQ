@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/core/error.schema.json",
+  "title": "Error tipado de OminAI HQ",
+  "description": "Error con las 8 categorias aprobadas. Codifica mediante oneOf la matriz exacta de 11.3, incluida la accion dependiente de current_attempt para TRANSIENT_FAILURE y SCHEMA_INVALID. Los errores sin reintento usan intento 0 y los dos errores reintentables admiten exactamente los intentos 0 y 1. No permite combinaciones contradictorias. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 10.5 y 11.3.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "INVALID_INPUT",
+        "NOT_FOUND",
+        "PERMISSION_DENIED",
+        "TRANSIENT_FAILURE",
+        "SCHEMA_INVALID",
+        "DEPENDENCY_FAILED",
+        "BUDGET_EXHAUSTED",
+        "SYSTEM_ERROR"
+      ],
+      "description": "Las 8 categorias de error aprobadas en la seccion 11.3."
+    },
+    "required_action": {
+      "type": "string",
+      "enum": [
+        "solicitar_correccion",
+        "solicitar_verificacion_o_fuente_alternativa",
+        "detener_y_escalar",
+        "reintentar_una_vez",
+        "guardar_checkpoint_y_bloquear",
+        "solicitar_una_regeneracion",
+        "bloquear_mision",
+        "bloquear_tareas_descendientes_y_notificar",
+        "pausar_y_pedir_decision_humana",
+        "conservar_diagnostico_y_checkpoint"
+      ],
+      "description": "Accion estable exacta segun la categoria y, cuando aplica, el numero de intento. Cada valor representa un comportamiento distinto de la matriz 11.3."
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "error_code",
+    "message",
+    "retry_allowed",
+    "max_retries",
+    "current_attempt",
+    "recoverable",
+    "required_action"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "error_code": {
+      "$ref": "#/$defs/error_code",
+      "description": "Categoria del error."
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Mensaje descriptivo del error."
+    },
+    "retry_allowed": {
+      "type": "boolean",
+      "description": "Indica si se permite reintento automatico segun 11.3."
+    },
+    "max_retries": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Numero maximo de reintentos permitidos para esta categoria."
+    },
+    "current_attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Intento actual (0 = primer intento). Maximo 0 para errores sin reintento; maximo 1 para TRANSIENT_FAILURE y SCHEMA_INVALID."
+    },
+    "recoverable": {
+      "type": "boolean",
+      "description": "Indica si el error permite continuacion tras correccion."
+    },
+    "required_action": {
+      "$ref": "#/$defs/required_action",
+      "description": "Accion requerida exacta segun la categoria y el numero de intento."
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "error_code": { "const": "INVALID_INPUT" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "solicitar_correccion" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "NOT_FOUND" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "solicitar_verificacion_o_fuente_alternativa" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "PERMISSION_DENIED" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "detener_y_escalar" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "TRANSIENT_FAILURE" },
+        "retry_allowed": { "const": true },
+        "max_retries": { "const": 1 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "reintentar_una_vez" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "TRANSIENT_FAILURE" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 1 },
+        "current_attempt": { "const": 1 },
+        "required_action": { "const": "guardar_checkpoint_y_bloquear" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "SCHEMA_INVALID" },
+        "retry_allowed": { "const": true },
+        "max_retries": { "const": 1 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "solicitar_una_regeneracion" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "SCHEMA_INVALID" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 1 },
+        "current_attempt": { "const": 1 },
+        "required_action": { "const": "bloquear_mision" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "DEPENDENCY_FAILED" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "bloquear_tareas_descendientes_y_notificar" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "BUDGET_EXHAUSTED" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "pausar_y_pedir_decision_humana" }
+      }
+    },
+    {
+      "properties": {
+        "error_code": { "const": "SYSTEM_ERROR" },
+        "retry_allowed": { "const": false },
+        "max_retries": { "const": 0 },
+        "current_attempt": { "const": 0 },
+        "required_action": { "const": "conservar_diagnostico_y_checkpoint" }
+      }
+    }
+  ]
+}

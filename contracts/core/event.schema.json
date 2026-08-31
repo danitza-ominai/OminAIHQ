@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/core/event.schema.json",
+  "title": "Evento de trazabilidad de OminAI HQ",
+  "description": "Registro de evento material. Todos los campos son obligatorios; los no aplicables se entregan como null, no se omiten. No puede contener campos de razonamiento interno, scratchpad ni Chain-of-Thought. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 11.1 y 10.2.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "mission_state": {
+      "type": "string",
+      "enum": [
+        "BORRADOR", "ACLARACION_REQUERIDA", "LISTA_PARA_PLAN",
+        "PLAN_EN_REVISION", "AUTORIZADA_PARA_EJECUTAR", "EN_EJECUCION",
+        "BLOQUEADA", "PAUSADA", "EN_CONSOLIDACION", "EN_EVALUACION",
+        "VBP_EN_REVISION", "VBP_RECHAZADO", "VBP_APROBADO",
+        "FINALIZADA", "CANCELADA"
+      ]
+    },
+    "task_state": {
+      "type": "string",
+      "enum": [
+        "PENDIENTE", "LISTA", "EN_CURSO", "COMPLETA",
+        "PARCIAL", "BLOQUEADA", "FALLIDA", "CANCELADA"
+      ]
+    },
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "INVALID_INPUT", "NOT_FOUND", "PERMISSION_DENIED",
+        "TRANSIENT_FAILURE", "SCHEMA_INVALID", "DEPENDENCY_FAILED",
+        "BUDGET_EXHAUSTED", "SYSTEM_ERROR"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version", "event_id", "mission_id", "task_id",
+    "actor", "actor_role", "action", "timestamp", "version",
+    "previous_state", "new_state", "tool_or_category",
+    "source_or_artifact", "result_summary", "typed_error",
+    "attempt", "budget_consumed", "related_approval_id",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico del evento."
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Mision a la que pertenece el evento."
+    },
+    "task_id": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Tarea relacionada, null si el evento es de nivel mision."
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador del actor que genero el evento."
+    },
+    "actor_role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rol del actor: usuario_humano, chief_of_staff, research_evidence_analyst, product_architect, delivery_planner, governance_risk o sistema."
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Accion realizada."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del evento ISO 8601."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version del artefacto afectado tras el evento."
+    },
+    "previous_state": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/mission_state" },
+        { "$ref": "#/$defs/task_state" }
+      ],
+      "description": "Estado anterior. Null para el primer evento de creacion."
+    },
+    "new_state": {
+      "anyOf": [
+        { "$ref": "#/$defs/mission_state" },
+        { "$ref": "#/$defs/task_state" }
+      ],
+      "description": "Estado nuevo tras el evento."
+    },
+    "tool_or_category": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Herramienta o categoria funcional utilizada."
+    },
+    "source_or_artifact": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Fuente o artefacto de referencia."
+    },
+    "result_summary": {
+      "type": "string",
+      "description": "Resultado resumido. Cadena vacia si no aplica. Nunca Chain-of-Thought."
+    },
+    "typed_error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["error_code", "message"],
+          "additionalProperties": false,
+          "properties": {
+            "error_code": { "$ref": "#/$defs/error_code" },
+            "message": { "type": "string", "minLength": 1 }
+          }
+        }
+      ],
+      "description": "Error tipado segun las 8 categorias aprobadas. Null si no hubo error."
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Numero de intento de la accion."
+    },
+    "budget_consumed": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["dimension", "amount"],
+          "additionalProperties": false,
+          "properties": {
+            "dimension": { "type": "string", "minLength": 1 },
+            "amount": { "type": "number", "minimum": 0 }
+          }
+        }
+      ],
+      "description": "Limite consumido por este evento. Null si no aplica."
+    },
+    "related_approval_id": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Aprobacion relacionada. Null si no aplica."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Clave de idempotencia. Una clave duplicada no genera un segundo efecto."
+    }
+  }
+}

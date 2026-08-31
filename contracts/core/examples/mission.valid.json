@@ -1,0 +1,38 @@
+{
+  "description": "Mision valida en estado BORRADOR con todos los campos requeridos y valores por defecto de la v0.",
+  "test_data": {
+    "schema_version": "1.0.0",
+    "mission_id": "MSN-20260828-001",
+    "user_id": "USR-001",
+    "title": "Disenar el flujo de onboarding para la primera mision de OminAI HQ",
+    "brief_version": 1,
+    "current_state": "BORRADOR",
+    "resumable_state": null,
+    "active_task": null,
+    "counters": {
+      "clarification_cycles": 0,
+      "task_reasoning_attempts": 0,
+      "transient_retries": 0,
+      "vbp_correction_rounds": 0,
+      "agent_requests": 0
+    },
+    "limits": {
+      "max_clarification_cycles": 3,
+      "max_task_reasoning_attempts": 2,
+      "max_transient_retries": 1,
+      "max_vbp_correction_rounds": 2,
+      "max_concurrent_missions": 1,
+      "max_concurrent_agents": 1,
+      "max_recursive_decomposition": 0,
+      "max_agent_execution_seconds": 300,
+      "max_mission_seconds": 1200,
+      "max_agent_requests_per_mission": 15,
+      "max_budget_usd": 25
+    },
+    "approval_refs": [],
+    "last_checkpoint_id": null,
+    "created_at": "2026-08-28T03:00:00-05:00",
+    "updated_at": "2026-08-28T03:00:00-05:00",
+    "record_version": 1
+  }
+}

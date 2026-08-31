@@ -1,0 +1,312 @@
+{
+  "description": "Casos invalidos de transicion, error y ciclo de aprobacion. Cada caso documenta la causa de rechazo. Los casos de ciclo de vida y referencia (TINV-009 a TINV-013) son semanticos, validados en memoria en el script de pruebas.",
+  "test_cases": [
+    {
+      "id": "TINV-001",
+      "test_type": "transition",
+      "description": "Actor no humano intenta aprobar el plan — AUTORIZADA_PARA_EJECUTAR requiere solo_usuario_humano.",
+      "from": "PLAN_EN_REVISION",
+      "to": "AUTORIZADA_PARA_EJECUTAR",
+      "actor": "chief_of_staff_agent",
+      "actor_role": "chief_of_staff",
+      "is_human_actor": false,
+      "expected_rejection": "RECHAZADA — MT-005 requiere authority solo_usuario_humano. Un actor no humano no puede alcanzar AUTORIZADA_PARA_EJECUTAR (INV-002)."
+    },
+    {
+      "id": "TINV-002",
+      "test_type": "transition",
+      "description": "Actor no humano intenta aprobar el VBP.",
+      "from": "VBP_EN_REVISION",
+      "to": "VBP_APROBADO",
+      "actor": "governance_risk_agent",
+      "actor_role": "governance_risk",
+      "is_human_actor": false,
+      "expected_rejection": "RECHAZADA — MT-012 requiere authority solo_usuario_humano. VBP_APROBADO no puede alcanzarse por inferencia de un modelo (INV-002)."
+    },
+    {
+      "id": "TINV-003",
+      "test_type": "transition",
+      "description": "Ruta directa inexistente BORRADOR a AUTORIZADA_PARA_EJECUTAR.",
+      "from": "BORRADOR",
+      "to": "AUTORIZADA_PARA_EJECUTAR",
+      "actor": "usuario humano A0",
+      "actor_role": "usuario_humano",
+      "is_human_actor": true,
+      "expected_rejection": "RECHAZADA — no existe transicion de BORRADOR a AUTORIZADA_PARA_EJECUTAR."
+    },
+    {
+      "id": "TINV-004",
+      "test_type": "transition",
+      "description": "Transicion desde estado terminal FINALIZADA.",
+      "from": "FINALIZADA",
+      "to": "BORRADOR",
+      "actor": "usuario humano A0",
+      "actor_role": "usuario_humano",
+      "is_human_actor": true,
+      "expected_rejection": "RECHAZADA — FINALIZADA es terminal. No existen transiciones de salida."
+    },
+    {
+      "id": "TINV-005",
+      "test_type": "error_schema",
+      "description": "Politica de error contradictoria — INVALID_INPUT con retry_allowed true y max_retries 2.",
+      "expected_rejection": "RECHAZADA — INVALID_INPUT requiere retry_allowed=false y max_retries=0 segun 11.3.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "INVALID_INPUT",
+        "message": "Campo titulo faltante.",
+        "retry_allowed": true,
+        "max_retries": 2,
+        "current_attempt": 0,
+        "recoverable": true,
+        "required_action": "corregir_entrada"
+      }
+    },
+    {
+      "id": "TINV-006",
+      "test_type": "error_schema",
+      "description": "TRANSIENT_FAILURE con max_retries 5 — debe ser exactamente 1 segun 11.3.",
+      "expected_rejection": "RECHAZADA — TRANSIENT_FAILURE requiere max_retries=1.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "TRANSIENT_FAILURE",
+        "message": "Timeout de servicio externo.",
+        "retry_allowed": true,
+        "max_retries": 5,
+        "current_attempt": 0,
+        "recoverable": true,
+        "required_action": "reintentar_una_vez"
+      }
+    },
+    {
+      "id": "TINV-007",
+      "test_type": "error_schema",
+      "description": "PERMISSION_DENIED con retry_allowed true — debe ser false con max_retries 0.",
+      "expected_rejection": "RECHAZADA — PERMISSION_DENIED requiere retry_allowed=false y max_retries=0.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "PERMISSION_DENIED",
+        "message": "Sin autorizacion para esta accion.",
+        "retry_allowed": true,
+        "max_retries": 1,
+        "current_attempt": 0,
+        "recoverable": false,
+        "required_action": "escalar_a_humano"
+      }
+    },
+    {
+      "id": "TINV-008",
+      "test_type": "error_schema",
+      "description": "Error con campo chain_of_thought prohibido.",
+      "expected_rejection": "RECHAZADA — chain_of_thought es campo adicional prohibido.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "SYSTEM_ERROR",
+        "message": "Error interno.",
+        "retry_allowed": false,
+        "max_retries": 0,
+        "current_attempt": 0,
+        "recoverable": false,
+        "required_action": "conservar_diagnosticos",
+        "chain_of_thought": "campo prohibido"
+      }
+    },
+    {
+      "id": "TINV-009",
+      "test_type": "error_schema",
+      "description": "required_action contradictoria — INVALID_INPUT con accion escalar_a_humano en vez de corregir_entrada.",
+      "expected_rejection": "RECHAZADA — INVALID_INPUT solo acepta required_action=corregir_entrada.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "INVALID_INPUT",
+        "message": "Tipo de campo incorrecto.",
+        "retry_allowed": false,
+        "max_retries": 0,
+        "current_attempt": 0,
+        "recoverable": true,
+        "required_action": "escalar_a_humano"
+      }
+    },
+    {
+      "id": "TINV-010",
+      "test_type": "error_schema",
+      "description": "current_attempt mayor que max_retries — INVALID_INPUT tiene max_retries=0 y current_attempt=1.",
+      "expected_rejection": "RECHAZADA — current_attempt 1 excede el maximo de 0 para errores sin reintento.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "INVALID_INPUT",
+        "message": "Formato invalido.",
+        "retry_allowed": false,
+        "max_retries": 0,
+        "current_attempt": 1,
+        "recoverable": false,
+        "required_action": "corregir_entrada"
+      }
+    },
+    {
+      "id": "TINV-011",
+      "test_type": "approval_lifecycle",
+      "description": "CONSUMIDA intenta recibir segunda decision — el ciclo de vida entre registros rechaza la operacion.",
+      "setup": {
+        "existing_record": {
+          "approval_id": "APR-CICLO-001",
+          "status": "CONSUMIDA",
+          "decision": "APROBAR",
+          "idempotency_key": "idem-ciclo-001"
+        }
+      },
+      "attempted_operation": {
+        "approval_id": "APR-CICLO-001",
+        "new_decision": "RECHAZAR"
+      },
+      "expected_rejection": "RECHAZADA — APR-CICLO-001 ya esta en estado CONSUMIDA (terminal). CONSUMIDA no tiene transiciones de salida (AT-001 solo aplica desde PENDIENTE). El ciclo de vida entre registros impide la segunda decision."
+    },
+    {
+      "id": "TINV-012",
+      "test_type": "approval_lifecycle",
+      "description": "EXPIRADA intenta pasar a CONSUMIDA — la transicion AT-001 solo es valida desde PENDIENTE.",
+      "setup": {
+        "existing_record": {
+          "approval_id": "APR-CICLO-002",
+          "status": "EXPIRADA",
+          "decision": null,
+          "expiration": "2026-08-01T07:00:00-05:00",
+          "idempotency_key": "idem-ciclo-002"
+        }
+      },
+      "attempted_operation": {
+        "approval_id": "APR-CICLO-002",
+        "new_status": "CONSUMIDA",
+        "new_decision": "APROBAR"
+      },
+      "expected_rejection": "RECHAZADA — APR-CICLO-002 ya esta en estado EXPIRADA (terminal). EXPIRADA no tiene transiciones de salida. No puede pasar a CONSUMIDA."
+    },
+    {
+      "id": "TINV-013",
+      "test_type": "referential_integrity",
+      "description": "Mision referencia una aprobacion que no existe en el conjunto de registros — NOT_FOUND detiene la transicion.",
+      "setup": {
+        "known_approvals": ["APR-REAL-001"],
+        "known_checkpoints": ["CP-REAL-001"]
+      },
+      "mission_under_test": {
+        "mission_id": "MSN-RI-001",
+        "approval_refs": ["APR-INEXISTENTE-999"],
+        "last_checkpoint_id": "CP-REAL-001"
+      },
+      "expected_rejection": "RECHAZADA — RI-001: approval_refs contiene APR-INEXISTENTE-999 que no existe en el conjunto de registros de aprobacion. Se produce NOT_FOUND y la transicion dependiente no puede ejecutarse."
+    },
+    {
+      "id": "TINV-014",
+      "test_type": "referential_integrity",
+      "description": "Mision referencia un checkpoint que no existe en el conjunto de registros — NOT_FOUND detiene la reanudacion.",
+      "setup": {
+        "known_approvals": ["APR-REAL-001"],
+        "known_checkpoints": ["CP-REAL-001"]
+      },
+      "mission_under_test": {
+        "mission_id": "MSN-RI-002",
+        "approval_refs": ["APR-REAL-001"],
+        "last_checkpoint_id": "CP-INEXISTENTE-999"
+      },
+      "expected_rejection": "RECHAZADA — RI-002: last_checkpoint_id CP-INEXISTENTE-999 no existe en el conjunto de registros de checkpoint. Se produce NOT_FOUND y la reanudacion de la mision no puede ejecutarse."
+    },
+    {
+      "id": "TINV-015",
+      "test_type": "idempotency",
+      "description": "Misma idempotency_key y contenido diferente — conflicto y rechazo INVALID_INPUT.",
+      "setup": {
+        "existing_record": {
+          "approval_id": "APR-IDEM-001",
+          "action_approved": "plan_v1",
+          "idempotency_key": "idem-conflicto-001"
+        }
+      },
+      "attempted_record": {
+        "approval_id": "APR-IDEM-001",
+        "action_approved": "plan_v2_diferente",
+        "idempotency_key": "idem-conflicto-001"
+      },
+      "expected_rejection": "RECHAZADA — misma idempotency_key idem-conflicto-001 con contenido diferente (action_approved difiere). Se produce INVALID_INPUT. El registro existente no se sobrescribe."
+    },
+    {
+      "id": "TINV-016",
+      "test_type": "error_schema",
+      "description": "TRANSIENT_FAILURE en intento 1 conserva indebidamente la accion del intento 0.",
+      "expected_rejection": "RECHAZADA — TRANSIENT_FAILURE en current_attempt=1 requiere guardar_checkpoint_y_bloquear.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "TRANSIENT_FAILURE",
+        "message": "El unico reintento tambien fallo.",
+        "retry_allowed": false,
+        "max_retries": 1,
+        "current_attempt": 1,
+        "recoverable": false,
+        "required_action": "reintentar_una_vez"
+      }
+    },
+    {
+      "id": "TINV-017",
+      "test_type": "error_schema",
+      "description": "TRANSIENT_FAILURE en intento 1 permite indebidamente un segundo reintento.",
+      "expected_rejection": "RECHAZADA — TRANSIENT_FAILURE en current_attempt=1 requiere retry_allowed=false.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "TRANSIENT_FAILURE",
+        "message": "El unico reintento tambien fallo.",
+        "retry_allowed": true,
+        "max_retries": 1,
+        "current_attempt": 1,
+        "recoverable": false,
+        "required_action": "guardar_checkpoint_y_bloquear"
+      }
+    },
+    {
+      "id": "TINV-018",
+      "test_type": "error_schema",
+      "description": "SCHEMA_INVALID en intento 1 conserva indebidamente la accion de regeneracion del intento 0.",
+      "expected_rejection": "RECHAZADA — SCHEMA_INVALID en current_attempt=1 requiere bloquear_mision.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "SCHEMA_INVALID",
+        "message": "La regeneracion tampoco cumple el schema.",
+        "retry_allowed": false,
+        "max_retries": 1,
+        "current_attempt": 1,
+        "recoverable": false,
+        "required_action": "solicitar_una_regeneracion"
+      }
+    },
+    {
+      "id": "TINV-019",
+      "test_type": "error_schema",
+      "description": "DEPENDENCY_FAILED usa bloquear_mision en lugar de bloquear descendientes y notificar.",
+      "expected_rejection": "RECHAZADA — DEPENDENCY_FAILED requiere bloquear_tareas_descendientes_y_notificar.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "DEPENDENCY_FAILED",
+        "message": "La tarea predecesora fallo.",
+        "retry_allowed": false,
+        "max_retries": 0,
+        "current_attempt": 0,
+        "recoverable": false,
+        "required_action": "bloquear_mision"
+      }
+    },
+    {
+      "id": "TINV-020",
+      "test_type": "error_schema",
+      "description": "BUDGET_EXHAUSTED usa una accion que no pausa ni solicita decision humana.",
+      "expected_rejection": "RECHAZADA — BUDGET_EXHAUSTED requiere pausar_y_pedir_decision_humana.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "error_code": "BUDGET_EXHAUSTED",
+        "message": "Se alcanzo el limite monetario aprobado.",
+        "retry_allowed": false,
+        "max_retries": 0,
+        "current_attempt": 0,
+        "recoverable": false,
+        "required_action": "detener_y_escalar"
+      }
+    }
+  ]
+}

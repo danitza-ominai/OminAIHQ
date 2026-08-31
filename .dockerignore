@@ -1,0 +1,19 @@
+# OminAI HQ - Exclusion estricta para imagenes de produccion (.dockerignore)
+.git
+.gitignore
+.env*
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+tests/
+test_output.log
+data/
+uploads/
+private/
+*.md
+!README.md

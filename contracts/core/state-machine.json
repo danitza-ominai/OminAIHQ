@@ -1,0 +1,390 @@
+{
+  "schema_version": "1.0.0",
+  "contract_version": "1.2-aprobada",
+  "description": "Maquina de estados declarativa para OminAI HQ. Enumera estados, terminalidad, transiciones, guardias, autoridades y requisitos de aprobacion humana. Toda transicion general de la tabla 4.2 esta expandida de forma determinista y verificable. No implementa runtime, persistencia, agentes ni interfaz. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 4.1 a 4.4.",
+  "mission_states": {
+    "BORRADOR":                  { "terminal": false, "description": "La mision existe, pero aun puede estar incompleta." },
+    "ACLARACION_REQUERIDA":      { "terminal": false, "description": "Hay preguntas o decisiones bloqueantes para el usuario humano." },
+    "LISTA_PARA_PLAN":           { "terminal": false, "description": "El brief cumple los campos minimos." },
+    "PLAN_EN_REVISION":          { "terminal": false, "description": "Existe un plan propuesto pendiente de decision humana." },
+    "AUTORIZADA_PARA_EJECUTAR":  { "terminal": false, "description": "El usuario humano aprobo la version exacta del plan." },
+    "EN_EJECUCION":              { "terminal": false, "description": "Hay tareas autorizadas activas." },
+    "BLOQUEADA":                 { "terminal": false, "description": "No puede avanzar por falta de entrada, permiso, evidencia, dependencia o presupuesto." },
+    "PAUSADA":                   { "terminal": false, "description": "El usuario humano o una regla de seguridad suspendio el trabajo conservando el punto de control." },
+    "EN_CONSOLIDACION":          { "terminal": false, "description": "Se prepara el borrador integrado del VBP." },
+    "EN_EVALUACION":             { "terminal": false, "description": "Governance & Risk evalua el borrador." },
+    "VBP_EN_REVISION":           { "terminal": false, "description": "El paquete evaluado espera decision humana." },
+    "VBP_RECHAZADO":             { "terminal": false, "description": "El usuario humano rechazo la version y registro motivos." },
+    "VBP_APROBADO":              { "terminal": false, "description": "El usuario humano aprobo la version exacta." },
+    "FINALIZADA":                { "terminal": true,  "description": "El paquete aprobado se genero y verifico sin alterar su contenido." },
+    "CANCELADA":                 { "terminal": true,  "description": "El usuario humano cerro la mision sin VBP final." }
+  },
+  "non_terminal_mission_states": [
+    "BORRADOR", "ACLARACION_REQUERIDA", "LISTA_PARA_PLAN", "PLAN_EN_REVISION",
+    "AUTORIZADA_PARA_EJECUTAR", "EN_EJECUCION", "BLOQUEADA", "PAUSADA",
+    "EN_CONSOLIDACION", "EN_EVALUACION", "VBP_EN_REVISION", "VBP_RECHAZADO", "VBP_APROBADO"
+  ],
+  "terminal_mission_states": ["FINALIZADA", "CANCELADA"],
+  "never_by_model_inference": ["AUTORIZADA_PARA_EJECUTAR", "VBP_APROBADO", "FINALIZADA", "CANCELADA"],
+  "mission_transitions": [
+    {
+      "id": "MT-001", "from": "BORRADOR", "to": "ACLARACION_REQUERIDA",
+      "event": "campos_faltantes_o_ambiguedades_detectadas",
+      "guard": "brief tiene campos faltantes o ambiguedades materiales",
+      "authority": "regla_determinista_o_chief_of_staff",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 1"
+    },
+    {
+      "id": "MT-002a", "from": "BORRADOR", "to": "LISTA_PARA_PLAN",
+      "event": "brief_completo",
+      "guard": "brief cumple todos los campos minimos sin supuestos pendientes",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 2 — variante brief completo"
+    },
+    {
+      "id": "MT-002b", "from": "BORRADOR", "to": "LISTA_PARA_PLAN",
+      "event": "supuestos_aceptados",
+      "guard": "supuestos documentados AND evidencia de aceptacion humana registrada (approval_ref)",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "human_evidence_required": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 2 — variante supuestos aceptados"
+    },
+    {
+      "id": "MT-003a", "from": "ACLARACION_REQUERIDA", "to": "LISTA_PARA_PLAN",
+      "event": "brief_completo",
+      "guard": "brief cumple todos los campos minimos sin supuestos pendientes",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 2 — variante brief completo"
+    },
+    {
+      "id": "MT-003b", "from": "ACLARACION_REQUERIDA", "to": "LISTA_PARA_PLAN",
+      "event": "supuestos_aceptados",
+      "guard": "supuestos documentados AND evidencia de aceptacion humana registrada (approval_ref)",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "human_evidence_required": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 2 — variante supuestos aceptados"
+    },
+    {
+      "id": "MT-004", "from": "LISTA_PARA_PLAN", "to": "PLAN_EN_REVISION",
+      "event": "plan_estructuralmente_valido",
+      "guard": "plan pasa validacion estructural",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 3"
+    },
+    {
+      "id": "MT-005", "from": "PLAN_EN_REVISION", "to": "AUTORIZADA_PARA_EJECUTAR",
+      "event": "aprobacion_humana_del_plan",
+      "guard": "aprobacion humana de version y alcance exactos",
+      "authority": "solo_usuario_humano",
+      "requires_human_approval": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 4"
+    },
+    {
+      "id": "MT-006", "from": "AUTORIZADA_PARA_EJECUTAR", "to": "EN_EJECUCION",
+      "event": "tarea_autorizada_iniciada",
+      "guard": "se inicia una tarea autorizada del plan aprobado",
+      "authority": "orquestacion_determinista",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 5"
+    },
+    {
+      "id": "MT-007", "from": "EN_EJECUCION", "to": "EN_CONSOLIDACION",
+      "event": "tareas_obligatorias_en_estado_admisible",
+      "guard": "todas las tareas obligatorias estan en estado admisible",
+      "authority": "chief_of_staff",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 9"
+    },
+    {
+      "id": "MT-008", "from": "EN_CONSOLIDACION", "to": "EN_EVALUACION",
+      "event": "borrador_completo_y_validado",
+      "guard": "borrador completo y validado",
+      "authority": "accion_determinista",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 10"
+    },
+    {
+      "id": "MT-009", "from": "EN_EVALUACION", "to": "VBP_EN_REVISION",
+      "event": "evaluacion_emitida",
+      "guard": "Governance & Risk emitio evaluacion",
+      "authority": "governance_risk",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 11"
+    },
+    {
+      "id": "MT-010", "from": "VBP_EN_REVISION", "to": "VBP_RECHAZADO",
+      "event": "rechazo_humano",
+      "guard": "rechazo humano con motivos registrados",
+      "authority": "solo_usuario_humano",
+      "requires_human_approval": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 12"
+    },
+    {
+      "id": "MT-011", "from": "VBP_RECHAZADO", "to": "EN_CONSOLIDACION",
+      "event": "revision_acotada_autorizada",
+      "guard": "el usuario autoriza una revision acotada",
+      "authority": "solo_usuario_humano",
+      "requires_human_approval": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 13"
+    },
+    {
+      "id": "MT-012", "from": "VBP_EN_REVISION", "to": "VBP_APROBADO",
+      "event": "aprobacion_humana_del_vbp",
+      "guard": "aprobacion humana ordinaria o con excepcion documentada",
+      "authority": "solo_usuario_humano",
+      "requires_human_approval": true,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 14"
+    },
+    {
+      "id": "MT-013", "from": "VBP_APROBADO", "to": "FINALIZADA",
+      "event": "exportacion_y_verificacion_correctas",
+      "guard": "exportacion y verificacion de integridad completadas",
+      "authority": "accion_determinista",
+      "requires_human_approval": false,
+      "transition_type": "specific",
+      "contract_ref": "4.2 fila 15"
+    },
+
+    { "id": "MT-014", "from": "BORRADOR", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-015", "from": "ACLARACION_REQUERIDA", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-016", "from": "LISTA_PARA_PLAN", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-017", "from": "PLAN_EN_REVISION", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-018", "from": "AUTORIZADA_PARA_EJECUTAR", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-019", "from": "EN_EJECUCION", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-020", "from": "PAUSADA", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-021", "from": "EN_CONSOLIDACION", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-022", "from": "EN_EVALUACION", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-023", "from": "VBP_EN_REVISION", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-024", "from": "VBP_RECHAZADO", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+    { "id": "MT-025", "from": "VBP_APROBADO", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "falta entrada, permiso, dependencia, evidencia o presupuesto", "authority": "regla_o_agente", "requires_human_approval": false, "transition_type": "block", "contract_ref": "4.2 fila 6" },
+
+    { "id": "MT-026", "from": "BORRADOR", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-027", "from": "ACLARACION_REQUERIDA", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-028", "from": "LISTA_PARA_PLAN", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-029", "from": "PLAN_EN_REVISION", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-030", "from": "AUTORIZADA_PARA_EJECUTAR", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-031", "from": "EN_EJECUCION", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-032", "from": "BLOQUEADA", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-033", "from": "EN_CONSOLIDACION", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-034", "from": "EN_EVALUACION", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-035", "from": "VBP_EN_REVISION", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-036", "from": "VBP_RECHAZADO", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+    { "id": "MT-037", "from": "VBP_APROBADO", "to": "PAUSADA", "event": "pausa_solicitada", "guard": "el usuario pausa o se activa limite de seguridad", "authority": "usuario_humano_o_regla_de_seguridad", "requires_human_approval": false, "transition_type": "pause", "contract_ref": "4.2 fila 7" },
+
+    { "id": "MT-038", "from": "BORRADOR", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-039", "from": "ACLARACION_REQUERIDA", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-040", "from": "LISTA_PARA_PLAN", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-041", "from": "PLAN_EN_REVISION", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-042", "from": "AUTORIZADA_PARA_EJECUTAR", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-043", "from": "EN_EJECUCION", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-044", "from": "BLOQUEADA", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-045", "from": "PAUSADA", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-046", "from": "EN_CONSOLIDACION", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-047", "from": "EN_EVALUACION", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-048", "from": "VBP_EN_REVISION", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-049", "from": "VBP_RECHAZADO", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+    { "id": "MT-050", "from": "VBP_APROBADO", "to": "CANCELADA", "event": "cancelacion_humana", "guard": "el usuario cancela", "authority": "solo_usuario_humano", "requires_human_approval": true, "transition_type": "cancel", "contract_ref": "4.2 fila 16" },
+
+    { "id": "MT-051", "from": "BLOQUEADA", "to": "BORRADOR", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == BORRADOR AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-052", "from": "BLOQUEADA", "to": "ACLARACION_REQUERIDA", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == ACLARACION_REQUERIDA AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-053", "from": "BLOQUEADA", "to": "LISTA_PARA_PLAN", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == LISTA_PARA_PLAN AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-054", "from": "BLOQUEADA", "to": "PLAN_EN_REVISION", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == PLAN_EN_REVISION AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-055", "from": "BLOQUEADA", "to": "AUTORIZADA_PARA_EJECUTAR", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == AUTORIZADA_PARA_EJECUTAR AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-056", "from": "BLOQUEADA", "to": "EN_EJECUCION", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == EN_EJECUCION AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-057", "from": "BLOQUEADA", "to": "PAUSADA", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == PAUSADA AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-058", "from": "BLOQUEADA", "to": "EN_CONSOLIDACION", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == EN_CONSOLIDACION AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-059", "from": "BLOQUEADA", "to": "EN_EVALUACION", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == EN_EVALUACION AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-060", "from": "BLOQUEADA", "to": "VBP_EN_REVISION", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == VBP_EN_REVISION AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-061", "from": "BLOQUEADA", "to": "VBP_RECHAZADO", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == VBP_RECHAZADO AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-062", "from": "BLOQUEADA", "to": "VBP_APROBADO", "event": "reanudacion_tras_desbloqueo", "guard": "bloqueo resuelto AND resumable_state == VBP_APROBADO AND autorizacion vigente", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+
+    { "id": "MT-063", "from": "PAUSADA", "to": "BORRADOR", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == BORRADOR", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-064", "from": "PAUSADA", "to": "ACLARACION_REQUERIDA", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == ACLARACION_REQUERIDA", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-065", "from": "PAUSADA", "to": "LISTA_PARA_PLAN", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == LISTA_PARA_PLAN", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-066", "from": "PAUSADA", "to": "PLAN_EN_REVISION", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == PLAN_EN_REVISION", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-067", "from": "PAUSADA", "to": "AUTORIZADA_PARA_EJECUTAR", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == AUTORIZADA_PARA_EJECUTAR", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-068", "from": "PAUSADA", "to": "EN_EJECUCION", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == EN_EJECUCION", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-069", "from": "PAUSADA", "to": "BLOQUEADA", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == BLOQUEADA", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-070", "from": "PAUSADA", "to": "EN_CONSOLIDACION", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == EN_CONSOLIDACION", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-071", "from": "PAUSADA", "to": "EN_EVALUACION", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == EN_EVALUACION", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-072", "from": "PAUSADA", "to": "VBP_EN_REVISION", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == VBP_EN_REVISION", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-073", "from": "PAUSADA", "to": "VBP_RECHAZADO", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == VBP_RECHAZADO", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" },
+    { "id": "MT-074", "from": "PAUSADA", "to": "VBP_APROBADO", "event": "reanudacion_tras_pausa", "guard": "usuario reanuda AND resumable_state == VBP_APROBADO", "authority": "usuario_humano_o_regla_autorizada", "requires_human_approval": false, "transition_type": "resume", "contract_ref": "4.2 fila 8" }
+  ],
+  "task_states": {
+    "PENDIENTE":  { "terminal": false, "description": "Tarea creada, con dependencias posiblemente insatisfechas." },
+    "LISTA":      { "terminal": false, "description": "Todas las dependencias estan satisfechas." },
+    "EN_CURSO":   { "terminal": false, "description": "Tarea en ejecucion activa." },
+    "COMPLETA":   { "terminal": true,  "description": "Tarea finalizada exitosamente." },
+    "PARCIAL":    { "terminal": true,  "description": "Tarea con resultado parcial y limitacion explicita." },
+    "BLOQUEADA":  { "terminal": false, "description": "Tarea bloqueada por dependencia, recurso o error." },
+    "FALLIDA":    { "terminal": true,  "description": "Tarea fallida. No se convierte automaticamente en COMPLETA por un reintento." },
+    "CANCELADA":  { "terminal": true,  "description": "Tarea cancelada." }
+  },
+  "non_terminal_task_states": ["PENDIENTE", "LISTA", "EN_CURSO", "BLOQUEADA"],
+  "terminal_task_states": ["COMPLETA", "PARCIAL", "FALLIDA", "CANCELADA"],
+  "task_transitions": [
+    { "id": "TT-001", "from": "PENDIENTE", "to": "LISTA", "event": "dependencias_satisfechas", "guard": "todas las dependencias estan satisfechas", "contract_ref": "4.4" },
+    { "id": "TT-002", "from": "PENDIENTE", "to": "BLOQUEADA", "event": "dependencia_fallida", "guard": "una dependencia fallo o no esta disponible", "contract_ref": "4.4, 11.3 DEPENDENCY_FAILED" },
+    { "id": "TT-003", "from": "PENDIENTE", "to": "CANCELADA", "event": "cancelacion", "guard": "mision cancelada o decision del usuario", "contract_ref": "4.4" },
+    { "id": "TT-004", "from": "LISTA", "to": "EN_CURSO", "event": "inicio_de_tarea", "guard": "tarea iniciada con dependencias verificadas", "contract_ref": "4.4" },
+    { "id": "TT-005", "from": "LISTA", "to": "BLOQUEADA", "event": "bloqueo_detectado", "guard": "nuevo bloqueo de dependencia o recurso", "contract_ref": "4.4" },
+    { "id": "TT-006", "from": "LISTA", "to": "CANCELADA", "event": "cancelacion", "guard": "mision cancelada o decision del usuario", "contract_ref": "4.4" },
+    { "id": "TT-007", "from": "EN_CURSO", "to": "COMPLETA", "event": "tarea_completada", "guard": "salida cumple esquema y criterios", "contract_ref": "4.4" },
+    { "id": "TT-008", "from": "EN_CURSO", "to": "PARCIAL", "event": "resultado_parcial", "guard": "resultado con limitacion explicita y decision sobre consolidacion", "contract_ref": "4.4" },
+    { "id": "TT-009", "from": "EN_CURSO", "to": "BLOQUEADA", "event": "bloqueo_en_ejecucion", "guard": "falta entrada, permiso, dependencia o presupuesto durante ejecucion", "contract_ref": "4.4" },
+    { "id": "TT-010", "from": "EN_CURSO", "to": "FALLIDA", "event": "fallo_de_tarea", "guard": "error no recuperable o intentos agotados", "contract_ref": "4.4" },
+    { "id": "TT-011", "from": "EN_CURSO", "to": "CANCELADA", "event": "cancelacion", "guard": "mision cancelada o decision del usuario", "contract_ref": "4.4" },
+    { "id": "TT-012", "from": "BLOQUEADA", "to": "LISTA", "event": "desbloqueo_de_tarea", "guard": "bloqueo resuelto, dependencias satisfechas", "contract_ref": "4.4" },
+    { "id": "TT-013", "from": "BLOQUEADA", "to": "CANCELADA", "event": "cancelacion", "guard": "mision cancelada o decision del usuario", "contract_ref": "4.4" }
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "rule": "Cada transicion registra mission_id, estado anterior, estado nuevo, evento, actor, fecha/hora, version, motivo y referencia al artefacto afectado.",
+      "contract_ref": "4.3"
+    },
+    {
+      "id": "INV-002",
+      "rule": "AUTORIZADA_PARA_EJECUTAR, VBP_APROBADO, FINALIZADA y CANCELADA nunca se alcanzan por inferencia de un modelo.",
+      "contract_ref": "4.3"
+    },
+    {
+      "id": "INV-003",
+      "rule": "Una solicitud duplicada con la misma clave de idempotencia no duplica tareas, aprobaciones ni paquetes.",
+      "contract_ref": "4.3"
+    },
+    {
+      "id": "INV-004",
+      "rule": "Cancelar o rechazar no elimina evidencia ni auditoria.",
+      "contract_ref": "4.3"
+    },
+    {
+      "id": "INV-005",
+      "rule": "Reanudar usa el ultimo punto de control valido y no repite una accion ya confirmada.",
+      "contract_ref": "4.3"
+    }
+  ],
+  "referential_integrity_rules": {
+    "description": "Reglas estructuradas de integridad referencial. JSON Schema valida formato e identidad de cada campo referencial. La verificacion de existencia real de los registros referenciados requiere validacion determinista entre registros implementada por el runtime. Una referencia no nula ausente produce NOT_FOUND y detiene la transicion dependiente.",
+    "rules": [
+      {
+        "id": "RI-001",
+        "field": "mission.approval_refs[]",
+        "references": "approval.approval_id",
+        "cardinality": "cero o mas",
+        "on_missing_non_null": {
+          "error_code": "NOT_FOUND",
+          "effect": "detener_transicion_dependiente",
+          "description": "Si approval_refs contiene un identificador que no existe en el conjunto de registros de aprobacion, se produce NOT_FOUND y la transicion que requiere esa aprobacion no puede ejecutarse."
+        }
+      },
+      {
+        "id": "RI-002",
+        "field": "mission.last_checkpoint_id",
+        "references": "checkpoint.checkpoint_id",
+        "cardinality": "cero o uno",
+        "on_missing_non_null": {
+          "error_code": "NOT_FOUND",
+          "effect": "detener_reanudacion",
+          "description": "Si last_checkpoint_id no es null y no existe en el conjunto de registros de checkpoint, se produce NOT_FOUND y la reanudacion de la mision no puede ejecutarse."
+        }
+      },
+      {
+        "id": "RI-003",
+        "field": "checkpoint.authorizations[]",
+        "references": "approval.approval_id",
+        "cardinality": "cero o mas",
+        "on_missing_non_null": {
+          "error_code": "NOT_FOUND",
+          "effect": "detener_transicion_dependiente",
+          "description": "Si authorizations contiene un identificador que no existe en el conjunto de registros de aprobacion, se produce NOT_FOUND y la transicion que requiere esa autorizacion no puede ejecutarse."
+        }
+      }
+    ],
+    "note": "No implementa persistencia. La verificacion se realiza contra el conjunto de registros en memoria disponible en cada operacion."
+  },
+  "approval_lifecycle": {
+    "description": "Ciclo de vida estructurado de una aprobacion. CONSUMIDA y EXPIRADA son terminales sin transiciones de salida. La prevencion de doble respuesta (que un registro CONSUMIDA reciba una segunda decision) se aplica mediante este ciclo de vida determinista entre registros, no por JSON Schema solo.",
+    "states": {
+      "PENDIENTE":  { "terminal": false, "description": "Esperando decision del usuario humano." },
+      "CONSUMIDA":  { "terminal": true,  "description": "El usuario humano emitio una decision. No regresa a PENDIENTE. No puede recibir segunda decision." },
+      "EXPIRADA":   { "terminal": true,  "description": "La fecha de expiracion se alcanzo sin decision. No puede ser respondida ni pasar a CONSUMIDA." }
+    },
+    "transitions": [
+      {
+        "id": "AT-001",
+        "from": "PENDIENTE",
+        "to": "CONSUMIDA",
+        "event": "decision_emitida",
+        "guard": "actor_role == usuario_humano AND decision in [APROBAR, APROBAR_CON_EXCEPCION, RECHAZAR, SOLICITAR_CAMBIOS]",
+        "authority": "solo_usuario_humano"
+      },
+      {
+        "id": "AT-002",
+        "from": "PENDIENTE",
+        "to": "EXPIRADA",
+        "event": "expiracion_alcanzada",
+        "guard": "timestamp_actual >= expiration AND expiration != null",
+        "authority": "accion_determinista"
+      }
+    ],
+    "invariants": [
+      "CONSUMIDA y EXPIRADA no tienen transiciones de salida.",
+      "Una aprobacion CONSUMIDA no regresa a PENDIENTE ni acepta segunda decision.",
+      "Una aprobacion EXPIRADA no puede pasar a CONSUMIDA ni recibir decision.",
+      "Solo el usuario humano (actor_role == usuario_humano) puede emitir una decision."
+    ]
+  },
+  "idempotency_rules": {
+    "description": "Reglas deterministas de idempotencia para misiones, aprobaciones, checkpoints y eventos.",
+    "same_key_same_content": {
+      "action": "no_second_effect",
+      "description": "Si la clave de idempotencia coincide y el contenido es identico al ya registrado, no se produce un segundo efecto. Se devuelve el resultado original sin crear nuevo registro."
+    },
+    "same_key_different_content": {
+      "action": "conflict_rejection",
+      "error_code": "INVALID_INPUT",
+      "description": "Si la clave de idempotencia coincide pero el contenido difiere del ya registrado, se rechaza con error INVALID_INPUT. No se sobrescribe el registro existente."
+    }
+  },
+  "approval_rules": {
+    "valid_decisions": ["APROBAR", "APROBAR_CON_EXCEPCION", "RECHAZAR", "SOLICITAR_CAMBIOS"],
+    "terminal_statuses": ["CONSUMIDA", "EXPIRADA"],
+    "actor_role_required": "usuario_humano",
+    "schema_scope": "JSON Schema valida estructura, tipos, enums, clave de idempotencia y restricciones de campos. La prevencion de doble respuesta sobre un registro ya CONSUMIDA se aplica mediante el ciclo de vida determinista entre registros en el runtime.",
+    "decision_constraints": {
+      "RECHAZAR": { "comment_required": true, "comment_pattern": "al menos un caracter no espacio" },
+      "SOLICITAR_CAMBIOS": { "comment_required": true, "comment_pattern": "al menos un caracter no espacio" },
+      "APROBAR_CON_EXCEPCION": { "conditions_min_items": 1, "condition_pattern": "al menos un caracter no espacio por condicion" }
+    },
+    "invariants": [
+      "Una aprobacion CONSUMIDA no regresa a estado PENDIENTE.",
+      "Una aprobacion CONSUMIDA no puede recibir una segunda decision (ciclo de vida entre registros).",
+      "Una aprobacion EXPIRADA no puede pasar a CONSUMIDA (ciclo de vida entre registros).",
+      "Misma clave de idempotencia y mismo contenido no genera segunda aprobacion.",
+      "Misma clave de idempotencia y contenido diferente genera conflicto INVALID_INPUT.",
+      "Solo el usuario humano (actor_role == usuario_humano) puede emitir una decision."
+    ]
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/runtime/agent-result.schema.json",
+  "title": "Resultado de Agente de Runtime de OminAI HQ",
+  "description": "Sobre comun de salida de agentes conforme a CONTRATO-MVP-v1.md seccion 5.2. Incluye todos los campos obligatorios, estados SUCCESS, PARTIAL, BLOCKED y FAILED, y excluye Chain-of-Thought.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "agent_role": {
+      "type": "string",
+      "enum": [
+        "chief_of_staff",
+        "research_evidence_analyst",
+        "product_architect",
+        "delivery_planner",
+        "governance_risk"
+      ]
+    },
+    "result_status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED"
+      ],
+      "description": "Estados admitidos por el sobre comun de salida (seccion 5.2)."
+    },
+    "tool_action_entry": {
+      "type": "object",
+      "required": [
+        "action",
+        "tool_or_category",
+        "relevant_input_summary",
+        "result_summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tool_or_category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relevant_input_summary": {
+          "type": "string"
+        },
+        "result_summary": {
+          "type": "string"
+        }
+      },
+      "description": "Registro resumido de accion de herramienta; nunca contiene Chain-of-Thought."
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "result_id",
+    "task_id",
+    "mission_id",
+    "mission_version",
+    "agent_role",
+    "status",
+    "summary",
+    "findings",
+    "evidence_refs",
+    "assumptions",
+    "limitations",
+    "approved_decisions_used",
+    "proposals",
+    "pending_decisions",
+    "risks",
+    "artifacts",
+    "attempt_count",
+    "tool_actions_summary",
+    "errors",
+    "recommended_next_step",
+    "timestamp",
+    "fingerprint",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico e inmutable del resultado de la ejecucion."
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la tarea que produjo este resultado."
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la mision."
+    },
+    "mission_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version de la mision al emitir el resultado."
+    },
+    "agent_role": {
+      "$ref": "#/$defs/agent_role"
+    },
+    "status": {
+      "$ref": "#/$defs/result_status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Resumen conciso y observable del resultado alcanzado."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hallazgos atomicos producidos por el especialista."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "description": "Referencias a registros de evidencia que respaldan los hallazgos.",
+      "uniqueItems": true
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Supuestos explicitos identificados durante la ejecucion."
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Limitaciones del resultado o de las fuentes consultadas."
+    },
+    "approved_decisions_used": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "description": "Decisiones aprobadas efectivamente utilizadas en el analisis.",
+      "uniqueItems": true
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Propuestas generadas para consideracion o siguientes fases."
+    },
+    "pending_decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Decisiones identificadas como pendientes de resolucion."
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Riesgos identificados durante la tarea."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "description": "Referencias a artefactos generados por la tarea.",
+      "uniqueItems": true
+    },
+    "attempt_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Numero de intentos consumidos en esta ejecucion.",
+      "maximum": 2
+    },
+    "tool_actions_summary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tool_action_entry"
+      },
+      "description": "Resumen observable de acciones de herramientas sin Chain-of-Thought."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "https://ominai.dev/contracts/core/error.schema.json"
+      },
+      "description": "Errores tipados encontrados durante la ejecucion."
+    },
+    "recommended_next_step": {
+      "type": "string",
+      "description": "Paso siguiente recomendado por el especialista."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora ISO 8601 de generacion del resultado."
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71,
+      "description": "SHA-256 hexadecimal minusculo de JSON ordenado por claves, separadores coma/dos puntos sin espacios, ensure_ascii=true, allow_nan=false, UTF-8. Arrays conservan orden. Ver dominio en app/runtime_contracts.py. Dominio: todos los campos salvo fingerprint, incluidos identidad, version, arrays y metadatos."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Clave de idempotencia de la ejecucion."
+    }
+  },
+  "$comment": "PZ-003C correccion 1. Validacion estructural no prueba referencias. RuntimeContractsValidator exige contexto en memoria para integridad; no ejecuta ni aprueba."
+}

@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ominai-hq
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/cpu-throttling: "true"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 300
+      serviceAccountName: ominai-hq-sa@your-gcp-project.iam.gserviceaccount.com
+      containers:
+      - image: gcr.io/your-gcp-project/ominai-hq:latest
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
+        env:
+        - name: OMINAI_MODE
+          value: "DEMO"
+        - name: OMINAI_DAILY_DEMO_LIMIT
+          value: "5"
+        - name: OMINAI_MAX_BUDGET_USD
+          value: "25.0"
