@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/core/mission.schema.json",
+  "title": "Mision de OminAI HQ",
+  "description": "Contrato nuclear de una mision. Define identidad, estado, contadores, limites, referencias y trazabilidad. Cuando current_state es BLOQUEADA o PAUSADA, resumable_state debe existir y no puede ser null. Las referencias en approval_refs y last_checkpoint_id son identificadores cuya existencia real requiere validacion determinista entre registros; JSON Schema valida formato y tipo, no existencia en almacenamiento. No implementa runtime, persistencia, agentes ni interfaz. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 4.1, 10.1 y 11.4.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "mission_state": {
+      "type": "string",
+      "enum": [
+        "BORRADOR",
+        "ACLARACION_REQUERIDA",
+        "LISTA_PARA_PLAN",
+        "PLAN_EN_REVISION",
+        "AUTORIZADA_PARA_EJECUTAR",
+        "EN_EJECUCION",
+        "BLOQUEADA",
+        "PAUSADA",
+        "EN_CONSOLIDACION",
+        "EN_EVALUACION",
+        "VBP_EN_REVISION",
+        "VBP_RECHAZADO",
+        "VBP_APROBADO",
+        "FINALIZADA",
+        "CANCELADA"
+      ],
+      "description": "Los 15 estados de mision aprobados en la seccion 4.1 del contrato."
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mission_id",
+    "user_id",
+    "title",
+    "brief_version",
+    "current_state",
+    "counters",
+    "limits",
+    "approval_refs",
+    "created_at",
+    "updated_at",
+    "record_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico e inmutable de la mision."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador del usuario humano propietario."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Titulo descriptivo de la mision."
+    },
+    "brief_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version actual del brief de la mision."
+    },
+    "current_state": {
+      "$ref": "#/$defs/mission_state",
+      "description": "Estado actual segun los 15 estados aprobados en 4.1."
+    },
+    "resumable_state": {
+      "oneOf": [
+        { "$ref": "#/$defs/mission_state" },
+        { "type": "null" }
+      ],
+      "description": "Estado al que regresar tras desbloqueo o reanudacion. Obligatorio y no null cuando current_state es BLOQUEADA o PAUSADA."
+    },
+    "active_task": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Identificador de la tarea activa, si existe."
+    },
+    "counters": {
+      "type": "object",
+      "description": "Contadores acumulados para control de limites. No se reinician al reanudar.",
+      "required": [
+        "clarification_cycles",
+        "task_reasoning_attempts",
+        "transient_retries",
+        "vbp_correction_rounds",
+        "agent_requests"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "clarification_cycles": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Ciclos de aclaracion iniciados por el sistema en la version actual del brief."
+        },
+        "task_reasoning_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Intentos de razonamiento de la tarea activa."
+        },
+        "transient_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Reintentos de error transitorio acumulados."
+        },
+        "vbp_correction_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Rondas de correccion del VBP realizadas."
+        },
+        "agent_requests": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Solicitudes totales a agentes en esta mision."
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Limites finitos aprobados para la v0 segun seccion 11.4.",
+      "required": [
+        "max_clarification_cycles",
+        "max_task_reasoning_attempts",
+        "max_transient_retries",
+        "max_vbp_correction_rounds",
+        "max_concurrent_missions",
+        "max_concurrent_agents",
+        "max_recursive_decomposition",
+        "max_agent_execution_seconds",
+        "max_mission_seconds",
+        "max_agent_requests_per_mission",
+        "max_budget_usd"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_clarification_cycles": { "type": "integer", "minimum": 0 },
+        "max_task_reasoning_attempts": { "type": "integer", "minimum": 0 },
+        "max_transient_retries": { "type": "integer", "minimum": 0 },
+        "max_vbp_correction_rounds": { "type": "integer", "minimum": 0 },
+        "max_concurrent_missions": { "type": "integer", "minimum": 1 },
+        "max_concurrent_agents": { "type": "integer", "minimum": 1 },
+        "max_recursive_decomposition": { "type": "integer", "minimum": 0 },
+        "max_agent_execution_seconds": { "type": "integer", "minimum": 1 },
+        "max_mission_seconds": { "type": "integer", "minimum": 1 },
+        "max_agent_requests_per_mission": { "type": "integer", "minimum": 1 },
+        "max_budget_usd": { "type": "number", "minimum": 0 }
+      }
+    },
+    "approval_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Referencias a identificadores de aprobaciones vinculadas. JSON Schema valida formato; la existencia real de cada approval_id requiere validacion determinista entre registros."
+    },
+    "last_checkpoint_id": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Identificador del ultimo checkpoint registrado. JSON Schema valida formato; la existencia real del checkpoint requiere validacion determinista entre registros."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de creacion ISO 8601."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de la ultima actualizacion ISO 8601."
+    },
+    "record_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version del registro, incrementada con cada modificacion."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "current_state": { "enum": ["BLOQUEADA", "PAUSADA"] }
+        }
+      },
+      "then": {
+        "required": ["resumable_state"],
+        "properties": {
+          "resumable_state": {
+            "$ref": "#/$defs/mission_state"
+          }
+        }
+      }
+    }
+  ]
+}

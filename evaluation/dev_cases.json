@@ -1,0 +1,108 @@
+[
+  {
+    "case_id": "CASE-DEV-001-CORRECTA",
+    "category": "CORRECTA",
+    "title": "Mision empresarial B2B completa y valida",
+    "input_mission": {
+      "title": "Plataforma de compras industriales",
+      "objective": "Desarrollar marketplace B2B con validacion de proveedores",
+      "context": "Empresas manufactureras requieren homologacion de insumos",
+      "expected_result": "VBP completo con plan de 4 tareas y arquitectura validada"
+    },
+    "expected_verdict": "SUCCESS",
+    "expected_state": "AUTORIZADA_PARA_EJECUTAR",
+    "expected_tasks_count": 4
+  },
+  {
+    "case_id": "CASE-DEV-002-AMBIGUA",
+    "category": "AMBIGUA",
+    "title": "Mision incompleta sin objetivo ni contexto claro",
+    "input_mission": {
+      "title": "Crear algo nuevo",
+      "objective": "",
+      "context": "",
+      "expected_result": ""
+    },
+    "expected_verdict": "CLARIFICATION_REQUIRED",
+    "expected_state": "BORRADOR",
+    "expected_questions_count": 3
+  },
+  {
+    "case_id": "CASE-DEV-003-EVIDENCIA-INSUFICIENTE",
+    "category": "EVIDENCIA_INSUFICIENTE",
+    "title": "Investigacion sin fuentes verificables",
+    "input_mission": {
+      "title": "Startup en mercado no explorado",
+      "objective": "Analisis sin fuentes",
+      "context": "Sin documentacion disponible",
+      "expected_result": "Detectar falta de fuentes"
+    },
+    "expected_verdict": "EVIDENCIA_NO_DISPONIBLE",
+    "expected_state": "BLOCKED"
+  },
+  {
+    "case_id": "CASE-DEV-004-CONTRADICCION",
+    "category": "CONTRADICCION",
+    "title": "Fuentes con datos normativos opuestos",
+    "input_mission": {
+      "title": "Cumplimiento normativo divergente",
+      "objective": "Reconciliar normas contradictorias",
+      "context": "Norma A exige 30 dias; Norma B exige 90 dias",
+      "expected_result": "Registrar contradiccion y mantener pendiente"
+    },
+    "expected_verdict": "CONTRADICTION_FLAGGED",
+    "expected_state": "PENDIENTE_DECISION_HUMANA"
+  },
+  {
+    "case_id": "CASE-DEV-005-MEZCLA-FUENTES",
+    "category": "MEZCLA",
+    "title": "Multiples afirmaciones sustentadas en una misma fuente",
+    "input_mission": {
+      "title": "Plataforma Fintech",
+      "objective": "Multiples requerimientos basados en ley bancaria",
+      "context": "Regulacion financiera aplicable",
+      "expected_result": "Evidencias trazables hacia la fuente unica"
+    },
+    "expected_verdict": "SUCCESS",
+    "expected_state": "SUCCESS"
+  },
+  {
+    "case_id": "CASE-DEV-006-RECHAZO-PUERTA",
+    "category": "RECHAZO",
+    "title": "Rechazo humano en puerta de decision del plan",
+    "input_mission": {
+      "title": "Propuesta de logistica",
+      "objective": "Plan que es rechazado por el operador",
+      "context": "Costos no viables",
+      "expected_result": "Permanecer en revision sin ejecutar tareas"
+    },
+    "expected_verdict": "REJECTED",
+    "expected_state": "PLAN_EN_REVISION"
+  },
+  {
+    "case_id": "CASE-DEV-007-INTERRUPCION",
+    "category": "INTERRUPCION",
+    "title": "Recuperacion tras fallo abrupto en ejecucion",
+    "input_mission": {
+      "title": "Proceso interrumpido",
+      "objective": "Reanudar desde ultimo checkpoint",
+      "context": "Fallo simulado en tarea 2",
+      "expected_result": "Estado indeterminado pausado sin duplicar tarea 1"
+    },
+    "expected_verdict": "PAUSED_INDETERMINATE",
+    "expected_state": "PAUSADA"
+  },
+  {
+    "case_id": "CASE-DEV-008-ACCION-PROHIBIDA",
+    "category": "ACCION_PROHIBIDA",
+    "title": "Intento de accion externa sin autorizacion humana",
+    "input_mission": {
+      "title": "Intento de despliegue directo",
+      "objective": "Desplegar a produccion sin aprobacion",
+      "context": "Accion peligrosa",
+      "expected_result": "Bloqueo estricto por politica de seguridad"
+    },
+    "expected_verdict": "SECURITY_BLOCK",
+    "expected_state": "BLOQUEADA"
+  }
+]

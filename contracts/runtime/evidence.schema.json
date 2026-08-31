@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/runtime/evidence.schema.json",
+  "title": "Registro de Evidencia de OminAI HQ",
+  "description": "Contrato para registros de evidencia respaldados por fuentes, conforme a CONTRATO-MVP-v1.md seccion 6.3. Mantiene trazabilidad entre claim, fuente, recolector, nivel de confianza, limitaciones, contradicciones y estado de verificacion.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "DOCUMENTO_LOCAL",
+        "ENLACE_WEB",
+        "CONSULTA_EXTERNA",
+        "APORTADO_POR_USUARIO"
+      ],
+      "description": "Tipos autorizados de fuentes de evidencia."
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "ALTA",
+        "MEDIA",
+        "BAJA"
+      ],
+      "description": "Nivel de confianza asignado a la evidencia con justificacion obligatoria."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "VALIDADA",
+        "INEXISTENTE",
+        "CONTRADICTORIA",
+        "OBSOLETA",
+        "NO_VERIFICABLE"
+      ],
+      "description": "Estado de verificacion de la evidencia."
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "mission_id",
+    "claim_id",
+    "title",
+    "author_or_organization",
+    "source_type",
+    "source_locator",
+    "location_in_source",
+    "publication_date",
+    "retrieval_date",
+    "excerpt_or_summary",
+    "collector",
+    "confidence",
+    "confidence_justification",
+    "limitations",
+    "contradictions",
+    "verification_status",
+    "fingerprint",
+    "mission_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico e inmutable del registro de evidencia."
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la mision."
+    },
+    "claim_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la afirmacion o hallazgo respaldado."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Titulo o descripcion breve de la fuente de evidencia."
+    },
+    "author_or_organization": {
+      "type": "string",
+      "description": "Autor u organizacion responsable de la fuente si consta, o cadena vacia."
+    },
+    "source_type": {
+      "$ref": "#/$defs/source_type"
+    },
+    "source_locator": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ubicacion local, ruta o URL de la fuente consultada."
+    },
+    "location_in_source": {
+      "type": "string",
+      "description": "Pagina, seccion o marca temporal dentro de la fuente si consta, o cadena vacia."
+    },
+    "publication_date": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Fecha de publicacion original de la fuente si consta; null en caso contrario."
+    },
+    "retrieval_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora ISO 8601 en que la fuente fue consultada o extraida."
+    },
+    "excerpt_or_summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Extracto textual o resumen pertinente respaldado por la fuente."
+    },
+    "collector": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador del especialista o usuario que recolecto la evidencia."
+    },
+    "confidence": {
+      "$ref": "#/$defs/confidence_level"
+    },
+    "confidence_justification": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Justificacion explicita del nivel de confianza otorgado."
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Limitaciones detectadas en la fuente o en el alcance de la evidencia."
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Contradicciones o discrepancias con otras fuentes; permanecen visibles."
+    },
+    "verification_status": {
+      "$ref": "#/$defs/verification_status"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71,
+      "description": "SHA-256 hexadecimal minusculo de JSON ordenado por claves, separadores coma/dos puntos sin espacios, ensure_ascii=true, allow_nan=false, UTF-8. Arrays conservan orden. Ver dominio en app/runtime_contracts.py. Dominio: todos los campos salvo fingerprint, incluidos identidad, version, arrays y metadatos."
+    },
+    "mission_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version exacta de la mision suministrada al validador contextual."
+    }
+  },
+  "$comment": "PZ-003C correccion 1. Validacion estructural no prueba referencias. RuntimeContractsValidator exige contexto en memoria para integridad; no ejecuta ni aprueba."
+}

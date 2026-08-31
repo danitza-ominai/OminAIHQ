@@ -1,0 +1,97 @@
+{
+  "real_gateway": {
+    "accepted": false,
+    "error": {
+      "schema_version": "1.0.0",
+      "error_code": "PERMISSION_DENIED",
+      "message": "Proveedor real deshabilitado en esta correccion SIMULADA.",
+      "retry_allowed": false,
+      "max_retries": 0,
+      "current_attempt": 0,
+      "recoverable": false,
+      "required_action": "detener_y_escalar"
+    },
+    "provider_calls": 0
+  },
+  "firestore": {
+    "visible_second_instance": false,
+    "client_calls": 0,
+    "event_action": "overwritten",
+    "rollback_retained_write": true
+  },
+  "storage": {
+    "returned_success": true,
+    "returned_uri": "gs://ominaihq-storage/review/file.txt",
+    "visible_second_instance": false,
+    "client_calls": 0
+  },
+  "cloud_http": {
+    "example.run.app": {
+      "status": 403,
+      "body": {
+        "status_code": 403,
+        "success": false,
+        "data": null,
+        "error": "HOST_INVALIDO: El host 'example.run.app' no es loopback local autorizado."
+      }
+    },
+    "localhost:8080": {
+      "status": 403,
+      "body": {
+        "status_code": 403,
+        "success": false,
+        "data": null,
+        "error": "HOST_INVALIDO: El host 'localhost:8080' no es loopback local autorizado."
+      }
+    },
+    "localhost:8000": {
+      "status": 200,
+      "body": {
+        "status_code": 200,
+        "success": true,
+        "data": {
+          "status": "UP",
+          "mode": "SIMULADA",
+          "version": "0.1.0",
+          "port": 8000
+        },
+        "error": null
+      }
+    },
+    "session_iap_headers": {
+      "status": 403,
+      "body": {
+        "status_code": 403,
+        "success": false,
+        "data": null,
+        "error": "PERMISSION_DENIED: Falta contexto humano local valido."
+      }
+    }
+  },
+  "dossier": {
+    "authorized_without_context": "AUTORIZADO_PUBLICO",
+    "metadata_changes_same_fingerprint": true
+  },
+  "image": {
+    "truncated_24bytes_accepted": true,
+    "sanitized_length": 20,
+    "fourbyte_jpeg_accepted": false
+  },
+  "sources": {
+    "configured_limit": 1,
+    "actual_encoded_bytes": 3,
+    "empty_allowlist_accepted": false,
+    "nonmock_read": false
+  },
+  "pdf": {
+    "invalid_document": [
+      true,
+      "SYNTHETIC_FAKE_EVIDENCE",
+      null
+    ]
+  },
+  "evaluation": {
+    "selfreported_blockers_pass": false,
+    "no_evidence_or_trajectory_pass": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "description": "Transicion valida de BORRADOR a ACLARACION_REQUERIDA por Chief of Staff, coincide con MT-001.",
+  "test_data": {
+    "transition_id": "MT-001",
+    "from": "BORRADOR",
+    "to": "ACLARACION_REQUERIDA",
+    "actor": "chief_of_staff_agent",
+    "actor_role": "chief_of_staff",
+    "event": "campos_faltantes_o_ambiguedades_detectadas",
+    "is_human_actor": false
+  },
+  "expected_result": "PERMITIDA — la transicion MT-001 existe en la maquina de estados y el actor no requiere ser humano para esta transicion."
+}

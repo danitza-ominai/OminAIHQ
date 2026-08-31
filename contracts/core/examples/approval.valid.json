@@ -1,0 +1,127 @@
+{
+  "description": "Casos validos para approval.schema.json — un caso por variante semantica relevante.",
+  "test_cases": [
+    {
+      "id": "AVAL-001",
+      "description": "CONSUMIDA con decision APROBAR — caso base.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-001",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_de_mision_MSN-20260828-001_v1",
+        "version_or_fingerprint": "plan-v1-sha256-abc123",
+        "timestamp": "2026-08-28T04:00:00-05:00",
+        "decision": "APROBAR",
+        "comment": "Plan aprobado sin observaciones.",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-apr-001"
+      }
+    },
+    {
+      "id": "AVAL-002",
+      "description": "CONSUMIDA con decision RECHAZAR — comentario obligatorio y no vacio.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-002",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "vbp_MSN-20260828-001_v1",
+        "version_or_fingerprint": "vbp-v1-sha256-xyz",
+        "timestamp": "2026-08-28T05:00:00-05:00",
+        "decision": "RECHAZAR",
+        "comment": "El VBP no incluye el analisis de riesgo requerido en la seccion 7.",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-apr-002"
+      }
+    },
+    {
+      "id": "AVAL-003",
+      "description": "CONSUMIDA con decision APROBAR_CON_EXCEPCION — al menos una condicion.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-003",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_de_mision_MSN-20260829-001_v2",
+        "version_or_fingerprint": "plan-v2-sha256-def456",
+        "timestamp": "2026-08-28T06:00:00-05:00",
+        "decision": "APROBAR_CON_EXCEPCION",
+        "comment": "Aprobado con la excepcion de revisar el modulo de integracion antes de ejecutar.",
+        "conditions": ["Revisar integracion de contratos antes del inicio de ejecucion."],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-apr-003"
+      }
+    },
+    {
+      "id": "AVAL-004",
+      "description": "PENDIENTE — sin decision, expiration futura.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-004",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_de_mision_MSN-20260830-001_v1",
+        "version_or_fingerprint": "plan-v1-sha256-ghi789",
+        "timestamp": "2026-08-28T07:00:00-05:00",
+        "decision": null,
+        "comment": "",
+        "conditions": [],
+        "expiration": "2026-09-04T07:00:00-05:00",
+        "status": "PENDIENTE",
+        "idempotency_key": "idem-apr-004"
+      }
+    },
+    {
+      "id": "AVAL-005",
+      "description": "EXPIRADA — expiration no null, decision null. La aprobacion no fue respondida antes de expirar.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-005",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_de_mision_MSN-20260801-001_v1",
+        "version_or_fingerprint": "plan-v1-sha256-jkl012",
+        "timestamp": "2026-08-01T07:00:00-05:00",
+        "decision": null,
+        "comment": "",
+        "conditions": [],
+        "expiration": "2026-08-08T07:00:00-05:00",
+        "status": "EXPIRADA",
+        "idempotency_key": "idem-apr-005"
+      }
+    },
+    {
+      "id": "AVAL-006",
+      "description": "Idempotencia — misma clave e identico contenido que AVAL-001. El runtime devuelve el resultado existente sin crear nuevo registro. JSON Schema valida el formato del campo idempotency_key.",
+      "idempotency_behavior": "same_key_same_content_no_second_effect",
+      "note": "Este caso documenta el comportamiento esperado del runtime. El registro es estructuralmente identico a AVAL-001 y debe ser valido por el schema.",
+      "test_data": {
+        "schema_version": "1.0.0",
+        "approval_id": "APR-20260828-001",
+        "user_id": "USR-001",
+        "actor": "usuario humano A0",
+        "actor_role": "usuario_humano",
+        "action_approved": "plan_de_mision_MSN-20260828-001_v1",
+        "version_or_fingerprint": "plan-v1-sha256-abc123",
+        "timestamp": "2026-08-28T04:00:00-05:00",
+        "decision": "APROBAR",
+        "comment": "Plan aprobado sin observaciones.",
+        "conditions": [],
+        "expiration": null,
+        "status": "CONSUMIDA",
+        "idempotency_key": "idem-apr-001"
+      }
+    }
+  ]
+}

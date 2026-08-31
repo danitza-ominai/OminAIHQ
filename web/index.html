@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OminAI HQ - Oficina Digital Agéntica</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- Barra Superior Limpia -->
+  <header class="header topbar">
+    <div class="header-container">
+      <div class="header-branding">
+        <a href="#operator-section" class="brand-logo-wrap" aria-label="OminAI HQ Inicio">
+          <img src="/assets/brand/ominai-logo.png" alt="OminAI Logo" class="brand-logo" onerror="this.style.display='none'">
+          <h1 data-i18n="app_title">OminAI HQ</h1>
+        </a>
+        <span class="header-subtitle" data-i18n="app_subtitle">Oficina Digital Agéntica</span>
+      </div>
+      <div class="header-controls">
+        <span class="badge badge-simulated" id="simulated-mode-badge" data-i18n="badge_simulated">MODO SIMULADA (HACKATHON DEMO)</span>
+        <span class="badge badge-ready" id="server-status-badge" data-i18n="badge_ready">ESTRUCTURA_LISTA</span>
+        <button type="button" id="btn-lang-toggle" class="btn btn-outline btn-sm">English (EN)</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Franja Superior de Cuatro Colores -->
+  <div class="accent-rule" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Barra Lateral de Navegación -->
+  <aside class="side-panel" aria-label="Navegación del Centro de Gestión">
+    <p class="side-label" data-i18n="nav_title">Centro de Gestión</p>
+    <nav>
+      <ul class="side-nav">
+        <li><a href="#operator-section" class="active"><span class="nav-num">1</span> <span data-i18n="nav_operator">Resumen</span></a></li>
+        <li><a href="#intake-section"><span class="nav-num">2</span> <span data-i18n="nav_intake">Admisión de misión</span></a></li>
+        <li><a href="#gate1-section"><span class="nav-num">3</span> <span data-i18n="nav_gate1">Puerta 1: Plan</span></a></li>
+        <li><a href="#execution-section"><span class="nav-num">4</span> <span data-i18n="nav_execution">Ejecución</span></a></li>
+        <li><a href="#evidence-memory-section"><span class="nav-num">5</span> <span data-i18n="nav_evidence">Evidencias y memoria</span></a></li>
+        <li><a href="#gate2-section"><span class="nav-num">6</span> <span data-i18n="nav_gate2">Puerta 2: VBP</span></a></li>
+        <li><a href="#vbp-view-section"><span class="nav-num">7</span> <span data-i18n="nav_export">Exportación</span></a></li>
+        <li><a href="#audit-section"><span class="nav-num">8</span> <span data-i18n="nav_audit">Límites y Auditoría</span></a></li>
+      </ul>
+    </nav>
+    <div class="side-status-box">
+      <strong data-i18n="side_status_heading">Modo de Operación</strong>
+      <p data-i18n="side_status_desc">Gobernanza agéntica con aprobación humana estricta (A0). Ejecución local protegida.</p>
+    </div>
+    <div class="side-footer">
+      <span data-i18n="side_footer_text">OminAI HQ • v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- Espacio de Trabajo / Primera Vista -->
+  <main class="main-container workspace">
+    <!-- Banner de Notificación y Próxima Acción Humana -->
+    <div id="action-banner" class="alert-banner alert-info" role="status" aria-live="polite">
+      <span class="alert-icon">ℹ️</span>
+      <span id="action-banner-text">Bienvenido a OminAI HQ. Complete los datos de la misión para iniciar el proceso.</span>
+    </div>
+
+    <!-- 1. Perfil de Operador Humano (A0) -->
+    <section class="card" id="operator-section" aria-labelledby="op-heading">
+      <h2 id="op-heading" data-i18n="section_operator">1. Operador Humano (A0)</h2>
+      <div id="operator-details" class="info-box">
+        <p><strong data-i18n="op_user_label">Usuario:</strong> <span id="op-user-id">NO_DISPONIBLE</span></p>
+        <p><strong data-i18n="op_name_label">Nombre:</strong> <span id="op-display-name">NO_DISPONIBLE</span></p>
+        <p><strong data-i18n="op_role_label">Rol de Autoridad:</strong> <span id="op-role" class="role-badge">NO_DISPONIBLE</span></p>
+      </div>
+    </section>
+
+    <!-- 2. Admisión de Misión (Intake) -->
+    <section class="card" id="intake-section" aria-labelledby="intake-heading">
+      <h2 id="intake-heading" data-i18n="section_intake">2. Admisión de Misión (Intake)</h2>
+      <form id="intake-form">
+        <div style="margin-bottom: 1rem;">
+          <button type="button" id="btn-load-demo" class="btn btn-outline">Cargar demo preparada ES/EN / Load prepared ES/EN demo</button>
+        </div>
+        <div class="form-group">
+          <label for="mission-title" data-i18n="label_mission_title">Título de la Misión:</label>
+          <input type="text" id="mission-title" name="mission-title" required placeholder="Ej. Plataforma B2B de compras industriales" data-i18n-placeholder="placeholder_mission_title" value="Marketplace B2B Industrial con Verificación de Proveedores">
+        </div>
+        <div class="form-group">
+          <label for="mission-objective" data-i18n="label_mission_objective">Objetivo:</label>
+          <textarea id="mission-objective" name="mission-objective" rows="2" required placeholder="Describa el objetivo principal de la misión..." data-i18n-placeholder="placeholder_mission_objective">Desarrollar portal de adquisiciones corporativas con catálogo y verificación automática de solvencia y homologación de calidad.</textarea>
+        </div>
+        <div class="form-group">
+          <label for="mission-context" data-i18n="label_mission_context">Contexto y Requisitos:</label>
+          <textarea id="mission-context" name="mission-context" rows="3" required placeholder="Contexto de negocio, regulaciones o restricciones aplicables..." data-i18n-placeholder="placeholder_mission_context">Sector manufacturero B2B con necesidad de integración a ERP heredado y cumplimiento estricto de auditoría transaccional.</textarea>
+        </div>
+        <div class="form-group">
+          <label for="mission-expected-result" data-i18n="label_expected_result">Resultado Esperado:</label>
+          <textarea id="mission-expected-result" name="mission-expected-result" rows="2" placeholder="Ej. VBP completo con plan y validación de gobernanza..." data-i18n-placeholder="placeholder_expected_result">VBP estructurado en 18 secciones con matriz de riesgos y dictamen independiente PASA.</textarea>
+        </div>
+        <button type="submit" id="btn-submit-mission" class="btn btn-primary" data-i18n="btn_submit_mission">Iniciar Misión</button>
+      </form>
+      <div id="mission-status-box" class="info-box hidden" style="margin-top: 1.25rem;">
+        <p><strong data-i18n="active_mission_label">Misión Activa:</strong> <span id="active-mission-id">-</span></p>
+        <p><strong data-i18n="active_status_label">Estado:</strong> <span id="active-mission-state" class="state-badge">BORRADOR</span></p>
+      </div>
+    </section>
+
+    <!-- 3. Puerta 1: Decisión del Plan -->
+    <section class="card" id="gate1-section" aria-labelledby="gate1-heading">
+      <h2 id="gate1-heading" data-i18n="section_gate1">3. Puerta 1: Decisión Humana del Plan</h2>
+      <div id="plan-details" class="info-box">
+        <p><em data-i18n="gate1_desc">El plan de ejecución requiere revisión y autorización expresa antes de activar los especialistas.</em></p>
+        <div id="plan-summary-box" style="margin-top: 0.5rem;">
+          <p><strong data-i18n="label_tasks_count">Tareas del Plan:</strong> <span id="plan-tasks-count">4 tareas secuenciales coordinadas</span></p>
+          <p><strong data-i18n="label_plan_fingerprint">Huella Digital (SHA-256):</strong> <code id="plan-fingerprint">sha256:pendiente</code></p>
+        </div>
+      </div>
+      <pre id="plan-preview">Plan pendiente</pre>
+      
+      <div class="form-group">
+        <label for="decision-reason">Motivo de decisión / Decision reason</label>
+        <textarea id="decision-reason" maxlength="4000"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="decision-conditions">Condiciones, una por línea / Conditions, one per line</label>
+        <textarea id="decision-conditions" maxlength="4000"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="decision-risks">Riesgos, uno por línea / Risks, one per line</label>
+        <textarea id="decision-risks" maxlength="4000"></textarea>
+      </div>
+      <p class="hint-text" style="margin-bottom: 1rem;">Estos campos se usan para rechazo y excepción del Plan/VBP. / These fields support rejection and VBP exception.</p>
+      
+      <div class="action-buttons">
+        <button type="button" id="btn-renew-approval" class="btn btn-outline" disabled>Renovar solicitud / Renew request</button>
+        <button type="button" id="btn-approve-plan" class="btn btn-success" data-i18n="btn_approve_plan" disabled>Aprobar Plan</button>
+        <button type="button" id="btn-reject-plan" class="btn btn-danger" data-i18n="btn_reject_plan" disabled>Rechazar Plan</button>
+        <button type="button" id="btn-pause-mission" class="btn btn-warning" data-i18n="btn_pause_mission" disabled>Pausar Misión</button>
+        <button type="button" id="btn-resume-mission" class="btn btn-info hidden" data-i18n="btn_resume_mission">Reanudar Misión</button>
+        <button type="button" id="btn-cancel-mission" class="btn btn-outline-danger" data-i18n="btn_cancel_mission" disabled>Cancelar Misión</button>
+      </div>
+    </section>
+
+    <!-- 4. Seguimiento y Tareas de Especialistas -->
+    <section class="card" id="execution-section" aria-labelledby="exec-heading">
+      <h2 id="exec-heading" data-i18n="section_specialists">4. Seguimiento de Especialistas</h2>
+      <ul class="task-list" id="task-list">
+        <li class="task-item" id="task-item-1">
+          <div class="task-info">
+            <strong data-i18n="spec_task1">Tarea 1: Chief of Staff - Planificación inicial y orquestación</strong>
+            <span class="task-subtext" id="task-subtext-1">Coordinación de requerimientos y asignación de contratos</span>
+          </div>
+          <span class="status-indicator" id="task-status-1">PENDIENTE</span>
+        </li>
+        <li class="task-item" id="task-item-2">
+          <div class="task-info">
+            <strong data-i18n="spec_task2">Tarea 2: Research Analyst - Análisis de fuentes y claims</strong>
+            <span class="task-subtext" id="task-subtext-2">Validación de fuentes y evidencia contrastada</span>
+          </div>
+          <span class="status-indicator" id="task-status-2">PENDIENTE</span>
+        </li>
+        <li class="task-item" id="task-item-3">
+          <div class="task-info">
+            <strong data-i18n="spec_task3">Tarea 3: Product Architect - Definición de producto y requisitos</strong>
+            <span class="task-subtext" id="task-subtext-3">Requisitos funcionales, no funcionales y propuesta de valor</span>
+          </div>
+          <span class="status-indicator" id="task-status-3">PENDIENTE</span>
+        </li>
+        <li class="task-item" id="task-item-4">
+          <div class="task-info">
+            <strong data-i18n="spec_task4">Tarea 4: Delivery Planner - Fases, dependencias y riesgos</strong>
+            <span class="task-subtext" id="task-subtext-4">Cronograma de entrega, dependencias y riesgos operacionales</span>
+          </div>
+          <span class="status-indicator" id="task-status-4">PENDIENTE</span>
+        </li>
+        <li class="task-item" id="task-item-5">
+          <div class="task-info">
+            <strong data-i18n="spec_task5">Tarea 5: Governance Risk - Dictamen independiente PASA / NO_PASA</strong>
+            <span class="task-subtext" id="task-subtext-5">Evaluación determinista y comprobación de bloqueadores</span>
+          </div>
+          <span class="status-indicator" id="task-status-5">PENDIENTE</span>
+        </li>
+      </ul>
+      <div class="action-buttons" style="margin-top: 1.25rem;">
+        <button type="button" id="btn-execute-step" class="btn btn-primary" data-i18n="btn_execute_step" disabled>Ejecutar Paso Siguiente</button>
+      </div>
+    </section>
+
+    <!-- 5. Evidencias y Memoria Aprobada -->
+    <section class="card" id="evidence-memory-section" aria-labelledby="ev-heading">
+      <h2 id="ev-heading" data-i18n="section_evidence_memory">5. Evidencias y Memoria Aprobada</h2>
+      <div class="split-grid">
+        <div class="split-col">
+          <h3 data-i18n="evidence_title">Evidencias Registradas</h3>
+          <div id="evidence-list" class="mini-list-box">
+            <p class="text-muted" data-i18n="evidence_none">No hay evidencias registradas aún.</p>
+          </div>
+        </div>
+        <div class="split-col">
+          <h3 data-i18n="memory_title">Memorias Aprobadas</h3>
+          <div id="memory-list" class="mini-list-box">
+            <p class="text-muted" data-i18n="memory_none">No hay hechos memorizados registrados.</p>
+          </div>
+          <div class="form-group">
+            <label for="memory-picker">Memoria y versión / Memory and version</label>
+            <select id="memory-picker"><option value="">Nueva / New</option></select>
+          </div>
+          <div class="form-group">
+            <label for="memory-category">Categoría / Category</label>
+            <select id="memory-category"><option>PREFERENCIA</option><option>RESTRICCION</option><option>DECISION_ARQUITECTURA</option><option>HECHO_VALIDADO</option></select>
+          </div>
+          <div class="form-group">
+            <label for="memory-content">Contenido / Content</label>
+            <textarea id="memory-content" maxlength="4000"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="memory-review-at">Fecha de revisión ISO con zona / ISO review date with timezone</label>
+            <input id="memory-review-at" type="text" placeholder="2026-09-30T12:00:00-05:00">
+          </div>
+          <div class="form-group">
+            <label><input id="memory-review-required" type="checkbox"> Requiere revisión temporal / Time-sensitive review required</label>
+            <label><input id="memory-conflict" type="checkbox"> Conflicto / Conflict</label>
+            <label><input id="memory-material" type="checkbox"> Impacto material / Material impact</label>
+            <label><input id="memory-resolve" type="checkbox"> Confirmo resolver bloqueos / I confirm resolving blockers</label>
+          </div>
+          <div class="form-group">
+            <label for="memory-delete-id">Para eliminar, copie ID exacto / To delete, copy exact ID</label>
+            <input id="memory-delete-id" type="text">
+          </div>
+          <div class="action-buttons">
+            <button type="button" id="btn-memory-propose" class="btn btn-outline">Proponer / Propose</button>
+            <button type="button" id="btn-memory-approve" class="btn btn-success">Confirmar versión / Confirm version</button>
+            <button type="button" id="btn-memory-update" class="btn btn-outline">Corregir / Correct</button>
+            <button type="button" id="btn-memory-delete" class="btn btn-danger">Eliminar / Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Puerta 2: Revisión Final del VBP -->
+    <section class="card" id="gate2-section" aria-labelledby="gate2-heading">
+      <h2 id="gate2-heading" data-i18n="section_gate2">6. Puerta 2: Dictamen y Aprobación del VBP</h2>
+      <div id="vbp-details" class="info-box">
+        <p><strong data-i18n="label_dictamen">Dictamen de Gobernanza:</strong> <span id="vbp-dictamen" class="badge badge-neutral">PENDIENTE</span></p>
+        <p><strong data-i18n="label_score">Puntaje Ponderado:</strong> <span id="vbp-score">- / 100</span></p>
+        <p><strong data-i18n="label_blockers">Bloqueadores:</strong> <span id="vbp-blockers">NO_DISPONIBLE</span></p>
+      </div>
+      <div class="action-buttons">
+        <button type="button" id="btn-approve-vbp" class="btn btn-success" data-i18n="btn_approve_vbp" disabled>Aprobar VBP Final</button>
+        <button type="button" id="btn-reject-vbp" class="btn btn-danger" data-i18n="btn_reject_vbp" disabled>Rechazar VBP</button>
+        <button type="button" id="btn-approve-exception" class="btn btn-warning" data-i18n="btn_approve_exception" disabled>Aprobar con Excepción</button>
+      </div>
+    </section>
+
+    <!-- 7. Visualización y Descarga del VBP (PZ-013C) -->
+    <section class="card" id="vbp-view-section" aria-labelledby="vbp-view-heading">
+      <div class="section-header-flex">
+        <h2 id="vbp-view-heading" data-i18n="section_vbp">7. Visualización y Descarga del VBP (PZ-013C)</h2>
+        <span class="badge badge-outline" data-i18n="vbp_sections_badge">18 Secciones Obligatorias</span>
+      </div>
+      <div class="info-box vbp-meta-box">
+        <div class="meta-row">
+          <p><strong data-i18n="vbp_status_text">Estado de Aprobación:</strong> <span id="vbp-approval-status-badge" class="state-badge">BORRADOR</span></p>
+          <p><strong data-i18n="vbp_manifest_fp">Huella del Manifest:</strong> <code id="vbp-fingerprint-display">sha256:pendiente</code></p>
+        </div>
+      </div>
+      
+      <div class="vbp-preview-container">
+        <div class="vbp-preview-header">
+          <span data-i18n="vbp_preview_heading">Contenido del VBP Canónico en Markdown (18 Secciones)</span>
+        </div>
+        <pre id="vbp-markdown-preview"><code>_El contenido del VBP estará disponible una vez ejecutado el pipeline de especialistas._</code></pre>
+      </div>
+
+      <div class="action-buttons" style="margin-top: 1.25rem;">
+        <button type="button" id="btn-download-vbp" class="btn btn-primary" data-i18n="btn_download_vbp" disabled>
+          📥 Descargar VBP (.md)
+        </button>
+        <span id="download-hint" class="hint-text" data-i18n="vbp_download_blocked">La descarga requiere que el VBP esté formalmente aprobado por el usuario humano.</span>
+      </div>
+    </section>
+
+    <!-- 8. Límites y Auditoría -->
+    <section class="card" id="audit-section" aria-labelledby="audit-heading">
+      <div class="section-header-flex">
+        <h2 id="audit-heading" data-i18n="section_audit">8. Límites y Auditoría en Tiempo Real</h2>
+        <button type="button" id="btn-refresh-audit" class="btn btn-sm btn-outline" data-i18n="btn_refresh_audit">Actualizar Auditoría</button>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3 data-i18n="metric_budget">Presupuesto Máximo</h3>
+          <p class="metric-value" data-i18n="metric_budget_val">$25.00 USD (Techo)</p>
+          <span class="metric-subtext" id="metric-spent">NO_DISPONIBLE</span>
+        </div>
+        <div class="metric-card">
+          <h3 data-i18n="metric_requests">Límite de Solicitudes</h3>
+          <p class="metric-value" data-i18n="metric_requests_val">15 máx.</p>
+          <span class="metric-subtext">Consumidas: <span id="metric-req-count">0</span></span>
+        </div>
+        <div class="metric-card">
+          <h3 data-i18n="metric_time">Tiempo Límite</h3>
+          <p class="metric-value" data-i18n="metric_time_val">300s por puerta</p>
+          <span class="metric-subtext">Misión máx: 1200s</span>
+        </div>
+      </div>
+      <div id="audit-timeline" class="timeline-box" aria-live="polite">
+        <p class="timeline-placeholder" data-i18n="timeline_placeholder">Registro de eventos auditables en espera...</p>
+      </div>
+      <pre id="runtime-metrics" aria-live="polite"></pre>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p data-i18n="footer_text">OminAI HQ - Sistema de Gobernanza y Venture Building con Autoridad Humana Exclusiva (A0).</p>
+  </footer>
+
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

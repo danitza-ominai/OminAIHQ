@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ominai.dev/contracts/core/checkpoint.schema.json",
+  "title": "Checkpoint de mision de OminAI HQ",
+  "description": "Punto de control para reanudacion. resumable_state es siempre obligatorio: no null cuando state es BLOQUEADA o PAUSADA, null cuando no aplica. Las referencias a tareas, artefactos y autorizaciones son identificadores cuya existencia real requiere validacion determinista entre registros. No guarda transcripcion de razonamiento ni Chain-of-Thought. Fuente normativa: CONTRATO-MVP-v1.md v1.2-aprobada, secciones 10.4 y 11.5.",
+  "$defs": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "mission_state": {
+      "type": "string",
+      "enum": [
+        "BORRADOR", "ACLARACION_REQUERIDA", "LISTA_PARA_PLAN",
+        "PLAN_EN_REVISION", "AUTORIZADA_PARA_EJECUTAR", "EN_EJECUCION",
+        "BLOQUEADA", "PAUSADA", "EN_CONSOLIDACION", "EN_EVALUACION",
+        "VBP_EN_REVISION", "VBP_RECHAZADO", "VBP_APROBADO",
+        "FINALIZADA", "CANCELADA"
+      ]
+    },
+    "task_state": {
+      "type": "string",
+      "enum": [
+        "PENDIENTE", "LISTA", "EN_CURSO", "COMPLETA",
+        "PARCIAL", "BLOQUEADA", "FALLIDA", "CANCELADA"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "checkpoint_id",
+    "mission_id",
+    "mission_version",
+    "state",
+    "resumable_state",
+    "tasks",
+    "dependencies",
+    "attempts",
+    "budgets_consumed",
+    "artifacts",
+    "authorizations",
+    "timestamp",
+    "fingerprint",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/schema_version"
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador unico del checkpoint."
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Mision a la que pertenece este checkpoint."
+    },
+    "mission_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version del registro de la mision al momento del checkpoint."
+    },
+    "state": {
+      "$ref": "#/$defs/mission_state",
+      "description": "Estado de la mision al momento del checkpoint."
+    },
+    "resumable_state": {
+      "oneOf": [
+        { "$ref": "#/$defs/mission_state" },
+        { "type": "null" }
+      ],
+      "description": "Estado reanudable almacenado. Obligatorio no null cuando state es BLOQUEADA o PAUSADA; null cuando no aplica."
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task_id", "state", "attempts"],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "$ref": "#/$defs/task_state"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "description": "Instantanea de tareas con su estado e intentos."
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from_task", "to_task", "satisfied"],
+        "additionalProperties": false,
+        "properties": {
+          "from_task": { "type": "string", "minLength": 1 },
+          "to_task": { "type": "string", "minLength": 1 },
+          "satisfied": { "type": "boolean" }
+        }
+      },
+      "description": "Grafo de dependencias entre tareas con estado de satisfaccion."
+    },
+    "attempts": {
+      "type": "object",
+      "description": "Contadores acumulados al momento del checkpoint.",
+      "required": [
+        "clarification_cycles",
+        "task_reasoning_attempts",
+        "transient_retries",
+        "vbp_correction_rounds",
+        "agent_requests"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "clarification_cycles": { "type": "integer", "minimum": 0 },
+        "task_reasoning_attempts": { "type": "integer", "minimum": 0 },
+        "transient_retries": { "type": "integer", "minimum": 0 },
+        "vbp_correction_rounds": { "type": "integer", "minimum": 0 },
+        "agent_requests": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "budgets_consumed": {
+      "type": "object",
+      "description": "Limites consumidos al momento del checkpoint.",
+      "required": ["elapsed_mission_seconds", "budget_usd_spent"],
+      "additionalProperties": false,
+      "properties": {
+        "elapsed_mission_seconds": { "type": "number", "minimum": 0 },
+        "budget_usd_spent": { "type": "number", "minimum": 0 }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Referencias a artefactos generados. La existencia real requiere validacion determinista entre registros."
+    },
+    "authorizations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Referencias a autorizaciones vigentes. La existencia real requiere validacion determinista entre registros."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del checkpoint ISO 8601."
+    },
+    "fingerprint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Huella de integridad del estado capturado."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Clave de idempotencia. Una clave duplicada no crea un segundo checkpoint."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": { "enum": ["BLOQUEADA", "PAUSADA"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "resumable_state": {
+            "$ref": "#/$defs/mission_state"
+          }
+        }
+      }
+    }
+  ]
+}

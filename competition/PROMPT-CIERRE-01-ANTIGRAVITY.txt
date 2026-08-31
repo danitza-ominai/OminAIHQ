@@ -1,0 +1,43 @@
+ENCARGO CIERRE-01 PARA ANTIGRAVITY
+
+REEMPLAZADO COMO ENCARGO OPERATIVO: usar competition/PROMPT-INTEGRAL-ANTIGRAVITY.txt por la nueva solicitud de Niko. El texto inferior se conserva como historia; no ejecutarlo por separado.
+
+Raíz: C:\Users\Nivez\Desktop\08_Ominai\OminAIHQ
+Ficha: competition/FICHA-CIERRE-01-PASARELA-REAL.md, versión 1.
+
+Este texto NO es una autorización humana. Niko debe aprobar esta ficha y los ocho archivos antes de construir. Si todavía no hay aprobación, realiza únicamente la prelectura y devuelve precondiciones concretas; no modifiques archivos. No solicites de nuevo autorizaciones ya registradas para este mismo alcance.
+
+Actúa como constructor inicial del transporte real pendiente ADK/Gemini. No corrijas defectos ajenos ni declares MVP terminado. No delegues ni construyas otras etapas.
+
+Lee la ficha completa y todas sus fuentes antes de decidir la implementación. El contrato aprobado fija cinco agentes y nube, pero esta pieza solo implementa la pasarela. No modifiques contratos ni conviertas una simulación en real cambiando su etiqueta.
+
+Comprueba la aceptación requerida de PZ-003F y las interfaces vigentes; reporta cualquier ausencia sin inventar aceptación. Las fichas antiguas que autorizaban crear archivos no permiten sobrescribirlos ahora. La lista de esta nueva ficha necesita aprobación propia.
+
+Una vez aprobada CIERRE-01, puedes CREAR exclusivamente:
+1. app/adk_provider.py
+2. tests/test_adk_provider.py
+
+Puedes MODIFICAR exclusivamente:
+3. app/agent_gateway.py — selección explícita y transporte, controles/contabilización compatibles.
+4. app/runtime_config.py — perfil real y límites separados del modo SIMULADA.
+5. app/local_repository.py — solo presupuesto/reservas/reconciliación y metadatos de llamadas; no misión, revisión nuclear, aprobaciones ni checkpoints.
+6. tests/test_agent_gateway.py — pruebas efectivas de transporte/presupuesto sin debilitar negativos.
+7. tests/test_local_repository.py — agregar pruebas de presupuesto y etiquetas conservando el resto.
+8. pyproject.toml — únicamente el extra agents con google-adk==2.8.0.
+
+Todos los demás archivos están prohibidos, incluidos README, runtime de misiones, especialistas, API HTTP, UI, Dockerfile, fichas y contratos. Si necesitas uno adicional, presenta motivo y espera decisión humana. No crees auxiliares ni logs para rodear este límite.
+
+Conserva SIMULADA como default. En modo real usa el ID gemini-3.5-flash y un agente/runtime ADK auténtico, sin herramientas en esta pieza. Imports o una clave disponible no prueban integración real. Fallar cerrado ante configuración incompleta; nunca recurrir al mock en modo real.
+
+Respeta todos los límites de la ficha: reserva antes de cada intento, tokens facturables incluido pensamiento, dos intentos/tarea como máximo, 15 solicitudes/misión, USD 25 global sin reinicio. Un timeout incierto retiene reserva y no se reintenta automáticamente. SDK sin intentos ocultos. No pedir ni registrar pensamientos, claves, payloads crudos o trazas automáticas.
+
+No instales paquetes ni ejecutes red/modelos por leer este prompt. Si las dependencias faltan, presenta ruta y comando exactos para autorización. No alteres el Python de otra aplicación. Las pruebas ordinarias deben ser offline y no utilizar bases de datos del usuario.
+
+Tras aprobación y precondiciones satisfechas:
+- Captura inventario, hashes, versiones y baseline antes de tocar código.
+- Implementa solo la pieza y demuestra los AC de la ficha con transporte inyectado sin red.
+- Ejecuta las tres suites focales y la completa con python -B en el entorno correcto.
+- El ensayo opt-in real requiere autorización adicional y queda PENDIENTE; no lo cuentes como prueba pasada.
+- Devuelve cambios por archivo, resultado por AC, comandos/códigos/conteos reales, diferencias contra baseline, hashes, residuos y bloqueos. No crees un informe extra en disco.
+
+Tiempo objetivo: 45 minutos. Sin expansión de alcance, eliminación de tests, correcciones ajenas ni aprobaciones humanas automatizadas. Al terminar detente para revisión independiente de GitHub Copilot y aceptación de Niko.
