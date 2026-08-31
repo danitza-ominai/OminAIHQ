@@ -250,3 +250,4 @@ OminAIHQ/
 ├── contracts/                   # Esquemas JSON Draft 2020-12 inmutables
 └── tests/                       # Suites completas de pruebas unitarias y de integración
 ```
+
