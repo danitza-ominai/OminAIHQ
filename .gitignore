@@ -27,6 +27,18 @@ demo-simulada-*.db
 # Materiales de referencia interna y PDFs pesados
 REQUISITOS/
 
+# Fichas de construccion, revisiones y notas internas
+PIEZAS-PENDIENTES/
+FICHA-*
+INFORME-*
+REVISION-*
+MAPA-PIEZAS-*
+NOTEBOOKLM_*
+GUIA_DE_MARCA_*
+miniatura_*
+slide_*
+
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
