@@ -37,6 +37,14 @@ NOTEBOOKLM_*
 GUIA_DE_MARCA_*
 miniatura_*
 slide_*
+competition/ENCARGO-*
+competition/EVIDENCIA-*
+competition/FICHA-*
+competition/PLAN-*
+competition/PROMPT-*
+competition/RESULTADO-*
+competition/REVISION-*
+competition/SECUENCIA-*
 
 # Archivos del sistema
 .DS_Store
