@@ -15,7 +15,7 @@ class TestSmoke(unittest.TestCase):
     def test_app_imports_cleanly(self) -> None:
         """Verifica que el paquete se importa y expone sus metadatos sin efectos."""
         self.assertEqual(app.__application__, "OminAI HQ")
-        self.assertEqual(app.__version__, "0.0.0")
+        self.assertEqual(app.__version__, "0.1.0")
 
     def test_main_execution_output(self) -> None:
         """Verifica que main() devuelve codigo 0 y JSON con la estructura esperada."""

@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from app import __version__
 from app import api_contracts, hq_runtime, local_repository, vbp_document, vbp_export
 from app.human_approvals import HumanApprovalError
 
@@ -71,7 +72,7 @@ class LocalAPIRouter:
     def _dispatch_api(self, method, path, headers, body_bytes):
         try:
             if method == "GET" and path == "/health":
-                return self.response(200, {"status": "UP", "mode": "SIMULADA", "version": "0.1.0", "port": 8000})
+                return self.response(200, {"status": "UP", "mode": "SIMULADA", "version": __version__, "port": 8000})
             if any(k in headers for k in ("x-ominai-actor-role", "x-ominai-user-id")):
                 return self.response(403, error="PERMISSION_DENIED: Headers de identidad no otorgan autoridad.")
             if not self.runtime.approvals.check_context(self.local_context):

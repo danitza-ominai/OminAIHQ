@@ -3,6 +3,7 @@ import copy
 import json
 import unittest
 from test_human_approvals import fixture
+import app
 from app.http_api import LocalAPIRouter
 
 class TestHTTPAPI(unittest.TestCase):
@@ -19,7 +20,11 @@ class TestHTTPAPI(unittest.TestCase):
     def decide(self,req=None,decision="APROBAR",**kw):
         return self.call("POST",self.base+"/decisions",{"approval_request":req or self.req,"decision":decision,**kw})
     def test_ac01_health_and_payload_size_limits(self):
-        self.assertEqual(self.call("GET","/health")[0],200)
+        code,_,body=self.call("GET","/health")
+        self.assertEqual(code,200)
+        data=json.loads(body)["data"]
+        self.assertEqual(data["version"],app.__version__)
+        self.assertEqual(data["mode"],"SIMULADA")
         self.assertEqual(self.router.dispatch("POST",self.base,self.headers,b"x"*51201)[0],413)
     def test_ac02_cross_origin_and_agent_actor_rejection(self):
         before=list(self.repo._conn.iterdump())
