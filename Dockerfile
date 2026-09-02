@@ -17,6 +17,7 @@ RUN python -m pip install --no-cache-dir --require-hashes -r requirements.lock
 COPY app/ app/
 COPY contracts/ contracts/
 COPY evaluation/ evaluation/
+COPY examples/demo_mission.json examples/demo_mission.json
 COPY web/ web/
 COPY README.md .
 

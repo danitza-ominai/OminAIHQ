@@ -40,7 +40,8 @@ slide_*
 post_*
 GUION_*
 competition/
-examples/
+examples/*
+!examples/demo_mission.json
 
 
 # Archivos del sistema
