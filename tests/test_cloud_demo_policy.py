@@ -92,6 +92,20 @@ class TestCloudDemoPolicy(unittest.TestCase):
         self.assertIn("USER appuser", content)
         self.assertIn("EXPOSE 8080", content)
 
+class TestCloudDemoResources(unittest.TestCase):
+    """Verificaciones aisladas de recursos requeridos por la demo Cloud."""
+
+    def test_ac06_dockerfile_copies_required_demo_fixture(self) -> None:
+        """AC-06: Docker incluye exactamente el fixture local requerido por la demo."""
+        fixture_path = Path("examples/demo_mission.json")
+        self.assertTrue(fixture_path.is_file(), "examples/demo_mission.json debe existir como archivo.")
+
+        dockerfile_path = Path("Dockerfile")
+        content = dockerfile_path.read_text(encoding="utf-8")
+        expected_copy = "COPY examples/demo_mission.json examples/demo_mission.json"
+        matching_lines = [line for line in content.splitlines() if line == expected_copy]
+        self.assertEqual(matching_lines, [expected_copy])
+
 
 if __name__ == "__main__":
     unittest.main()
