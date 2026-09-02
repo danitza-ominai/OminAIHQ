@@ -1,32 +1,51 @@
-# OminAI HQ - Protocolo de Cierre y Release Gates del MVP (PZ-015A)
+# OminAI HQ - Estado vigente de release gates del MVP (PZ-015A)
 
-Este documento registra los resultados de evaluacion integral, verificacion de puertas de gobernanza
-y estado de los requerimientos funcionales y no funcionales del MVP conforme a CONTRATO-MVP-v1.md.
+Fecha de corte: 2026-09-02. Versión técnica evaluada: `0.1.0`.
 
----
+Este documento registra el estado técnico actual conforme a
+`CONTRATO-MVP-v1.md`. No constituye autorización de release, despliegue ni
+aceptación humana integral.
 
-## 1. Resumen de Ejecución de Pruebas
+## 1. Evidencia automatizada disponible
 
-- **Total de Pruebas Unitarias y de Integración:** 231 pruebas pasando al 100% sin fallos ni errores.
-- **Cobertura de Requerimientos:** RF-001 a RF-030, RNF-001 a RNF-015, CT-001 a CT-017.
-- **Residuos y Artefactos:** 0 archivos `.pyc`, 0 carpetas `__pycache__`, 0 secretos `.env*`, 0 logs temporales.
+- Suite completa local: `308/308` pruebas pasan en el entorno funcional.
+- El recorrido cubierto por esa suite usa fixtures, dobles, clientes inyectados,
+  almacenamiento en memoria y ejecución `SIMULADA` según el componente.
+- Hay pruebas de flujo local, SQLite, aprobaciones humanas controladas, límites,
+  auditoría, exportación del VBP y evaluación adversarial reproducible.
+- El conteo de pruebas no demuestra por sí solo cobertura completa de RF-001 a
+  RF-030, RNF-001 a RNF-015 y CT-001 a CT-017. Falta una matriz ejecutable que
+  vincule cada control aplicable con evidencia reproducible.
 
----
+## 2. Snapshot de gates
 
-## 2. Matriz de Gates de Gobernanza (C.18 y 15.7)
-
-| Gate | Requerimiento Contractual | Estado Verificado |
+| Gate | Evidencia actual | Estado |
 |---|---|---|
-| **Gate 1** | Aprobación Humana del Plan (Puerta 1) | **APROBADO** (TTL 300s, Huella SHA-256, Bloqueo de autoaprobación de IA) |
-| **Gate 2** | Aprobación Humana del VBP (Puerta 2) | **APROBADO** (Independiente de Puerta 1, Dictamen Governance PASA/NO_PASA) |
-| **Gate 3** | Techo de Presupuesto ($25.00 USD) | **APROBADO** (Pausa atómica en umbrales 70%, 90% y 100%) |
-| **Gate 4** | Límite de Peticiones de Agentes (15 máx) | **APROBADO** (Contador acumulativo inviolable entre reinicios) |
-| **Gate 5** | Cero Chain-of-Thought expuesto | **APROBADO** (Aislamiento de razonamiento interno en todos los schemas) |
-| **Gate 6** | Aislamiento de Memoria y Expediente | **APROBADO** (Sanitización de rutas locales y revocación instantánea) |
+| Flujo local Misión → Plan → VBP | Recorrido automatizado con datos sintéticos, dos puertas separadas y exportación validada | `VERIFICADO_EN_SIMULADA` |
+| Persistencia y reanudación local | Pruebas con SQLite, reinicio, checkpoints e idempotencia | `VERIFICADO_EN_SIMULADA` |
+| Límites, permisos y Zero-CoT | Pruebas positivas y negativas del runtime local y del gateway | `VERIFICADO_EN_SIMULADA` |
+| Evaluación reproducible | Harness, checksum, casos adversariales y separación declarada del holdout | `VERIFICADO_EN_SIMULADA` |
+| Gemini mediante Google ADK | Módulo presente; pruebas offline con ejecutor inyectado | `PENDIENTE_DE_EVIDENCIA_REAL` |
+| Cloud Run | Entrypoint, Dockerfile y manifiesto de ejemplo presentes; sin servicio desplegado demostrado | `PENDIENTE_DE_EVIDENCIA_REAL` |
+| Firestore | Adaptador presente; implementación observada en memoria | `PENDIENTE_DE_EVIDENCIA_REAL` |
+| Google Cloud Storage | Adaptador presente; implementación observada en memoria | `PENDIENTE_DE_EVIDENCIA_REAL` |
+| Cobertura integral RF/RNF/CT | No existe aquí una matriz ejecutable completa por control | `NO_CERRADO` |
+| Aceptación humana integral del MVP | Solo constan aceptaciones por pieza | `NO_CERRADO` |
 
----
+## 3. Condiciones antes de release o despliegue
 
-## 3. Estado de Despliegue en Vivo
+- Obtener autorización humana expresa para cualquier uso de credenciales,
+  servicio externo, gasto o despliegue.
+- Ejecutar y registrar una integración real con Gemini/ADK.
+- Construir y demostrar el servicio en Cloud Run con identidad y límites
+  observables.
+- Verificar persistencia real en Firestore y Google Cloud Storage.
+- Completar la matriz RF/RNF/CT y resolver los controles aplicables pendientes.
+- Realizar revisión independiente y decisión humana final sobre la versión exacta.
 
-- **Entorno Local y Sintético:** 100% OPERATIVO.
-- **Despliegue Real en Cloud Run:** PENDIENTE_DE_AUTORIZACION_EXPRESA_Y_GASTO (A0).
+## 4. Dictamen vigente
+
+El estado general es `NO_CERRADO`. La evidencia local `SIMULADA` es válida para
+los comportamientos que ejercita, pero no autoriza inferir integración real,
+operación productiva, despliegue, cobertura contractual total ni aceptación
+humana integral. Un resultado automatizado verde no sustituye esa decisión.

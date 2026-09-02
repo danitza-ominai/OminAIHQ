@@ -10,147 +10,132 @@ Oficina digital agéntica donde se transforma una misión de negocio en un **Ven
 - **Omi**: exclusivo de Business OS.
 - **OminaiTech Engine**: integración futura, fuera del MVP.
 
-## Estado vigente — Cierre Integral OminAI HQ (31-08-2026)
+## Estado técnico vigente (2026-09-02)
 
-- **Estado de Construcción**: COMPLETADO Y VERIFICADO OFFLINE.
-- **Suite de Pruebas**: `Ran 307 tests — OK (0 fallos, 0 errores)`.
-- **Integración de Modelos**: Adaptador oficial ADK 2.8.0 (`app/adk_provider.py`) con soporte `gemini-3.5-flash`, tarifas explícitas, control estricto de pre-reserva de presupuesto, reconciliación única y fallo seguro ante 401/403 sin exposición de secretos.
-- **Autoridad e Idempotencia**: Mandato humano persistido validado (`ValidatedRealExecutionMandate`) y almacén de idempotencia durable (`DurableCallIdempotencyStore`) para replay determinista sin doble llamada ni sobrecosto.
-- **Cinco Agentes**: Chief of Staff, Research Evidence Analyst, Product Architect, Delivery Planner y Governance Risk conectados dinámicamente con VBP de 18 secciones derivado de la misión y evidencia.
-- **Adaptadores Cloud**: Servidor Cloud Run (`app/cloud_http_api.py`), repositorio Firestore (`app/firestore_repository.py`) y almacenamiento GCS (`app/cloud_storage.py`).
-- **Seguridad e Ingesta**: Prevención SSRF en `SourceReader`, saneamiento de imágenes/documentos (protección contra bombas ZIP y JPEG truncados), cuotas aisladas por misión y harness de evaluación con pesos canónicos 30/25/20/15/10.
+- **Versión técnica:** `0.1.0`, coincidente en `pyproject.toml`, el paquete Python y `/health`.
+- **Suite automatizada más reciente:** `308/308` pruebas pasan en el entorno funcional local.
+- **Alcance demostrado:** recorrido local etiquetado `SIMULADA`; las pruebas no constituyen aceptación humana integral del MVP.
+- **Verificado localmente:** runtime HTTP de loopback, interfaz web, persistencia SQLite, puertas de aprobación humana controladas, ejecución secuencial simulada, auditoría, memoria local, evaluación automatizada y exportación canónica del VBP.
+- **Adaptadores presentes:** Google ADK, entrada HTTP orientada a Cloud Run, repositorio Firestore y almacenamiento Cloud Storage. Su código y sus pruebas offline usan ejecutores inyectados, dobles o almacenamiento en memoria; no demuestran una integración real ni un despliegue.
+- **Estado de entrega:** `NO_CERRADO`. No se declara el MVP completo, listo para producción ni aceptado integralmente.
 
-## Intervencion excepcional posterior a dos rondas — CORRECCION_PARCIAL
+`app/__main__.py` conserva su salida mínima `STRUCTURE_READY` con
+`implemented_capabilities=[]`; esa salida es un smoke test de estructura y no un
+inventario de las capacidades verificadas por otras pruebas.
 
-2026-08-31. Autorizacion humana adicional y excepcional: se conserva el historial
-de primera y segunda ronda; esta intervencion no reinicia sus contadores ni
-autoriza otra posterior. Perimetro cerrado: 39 archivos anteriores mas
-contracts/core/event.schema.json, tests/test_contracts.py y
-tests/test_five_agent_flow.py; 42 archivos existentes, sin fuentes nuevas.
+### Capacidades verificadas en modo local `SIMULADA`
 
-Baseline propio: 201 archivos; 263 tests, 259 pasan y cuatro fallan (salida 1).
-En event.schema.json se sustituyeron unicamente los dos oneOf de previous_state
-y new_state por anyOf. Se conservan enums, campos requeridos, rechazo de extras
-y null solo en previous_state. Matriz estructural de 462 pares de estados y
-negativos; no concede transiciones. Matriz anterior de errores preservada.
+- Creación y recuperación de misiones en SQLite con estado, eventos, checkpoints y controles de reanudación.
+- Revisión del plan y del VBP mediante dos puertas humanas separadas, vinculadas a identidad, versión y huella.
+- Flujo secuencial de especialistas con resultados sintéticos, límites finitos y bloqueo seguro ante errores.
+- Consulta de evidencia, memoria y auditoría sin exponer Chain-of-Thought.
+- Generación, validación de integridad y exportación Markdown del VBP de 18 secciones.
+- Harness de evaluación reproducible con casos adversariales, checksum del dataset y separación declarada del holdout.
 
-Verificado en esta intervencion SIMULADA:
+### Adaptadores existentes sin evidencia real
 
-- Fixtures de repositorio y cinco agentes corregidos con checkpoint, candidato,
-  contexto, evidencia y autorizaciones existentes; se conserva NO_PASA sin contexto.
-- HTTP entrega bytes antes de marcar FINALIZADA. Fallos de preparacion, escritura,
-  flush o persistencia no finalizan. El servidor solo puede verificar su entrega
-  al transporte, no que el usuario haya guardado el archivo en disco.
-- Eventos de tarea incluyen tarea real, estado anterior/nuevo, intento, coste cero
-  simulado y referencia de autorizacion. Auditoria consulta eventos y checkpoints
-  persistidos con filtros y proyeccion saneada, sin reescribir historia.
-- Memoria persistida, aprobacion por version, bloqueo de plan con memoria cambiada,
-  correccion que invalida aprobacion, historial de versiones sin copiar contenido
-  y purga con metadatos minimos. La UI permite proponer/confirmar/corregir/eliminar.
-- Runtime y gateways configurados comparten la misma base y ledger; dos conexiones,
-  reservas concurrentes y reapertura probadas. La demo exige OMINAI_LOCAL_DB absoluta.
-  Sin configuracion de demo se conserva aislamiento offline; :memory: no es prueba
-  de presupuesto global. Bases diferentes tampoco coordinan consumo.
-- Demo preparada ES/EN: ingles correspondiente al contenido, evidencia e IDs reales
-  del escenario sintetico, 18 bloques congelados antes de aprobar. Entradas
-  arbitrarias sin traduccion conocida quedan PENDIENTE; no hay traductor externo.
-- Navegador real: crear/revisar/aprobar Plan, cuatro pasos, PASA con contexto,
-  aprobacion ordinaria del VBP, pausa/reanudacion, errores, selector ES/EN y recarga.
-  Reinicio real del servidor conserva mision y memoria; segunda mision referencia
-  la memoria de la primera. Decisiones automatizadas exclusivamente sinteticas.
+- `app/adk_provider.py` contiene el límite de integración para Google ADK y Gemini; sus pruebas son offline y emplean eventos o ejecutores inyectados. **No hay evidencia de una llamada Gemini en vivo.**
+- `app/cloud_http_api.py` contiene un punto de entrada HTTP compatible con el entorno esperado de Cloud Run. **No hay evidencia de un servicio desplegado en Cloud Run.**
+- `app/firestore_repository.py` acepta un cliente, pero su implementación actual conserva datos en diccionarios del proceso. **No hay evidencia de persistencia real en Firestore.**
+- `app/cloud_storage.py` acepta un cliente, pero guarda bytes en memoria. **No hay evidencia de escritura real en Google Cloud Storage.**
+- El `Dockerfile` y los manifiestos de ejemplo describen un empaquetado posible; no son evidencia de build publicado, despliegue ni operación real.
 
-Resultado final: 273 tests en 91.004 s, 272 pasan y **uno falla**, salida real 1.
-La suite de 272 habia pasado antes de incorporar la regresion abierta: no se usa
-ese verde intermedio como cierre. Smoke tests: app=0 (STRUCTURE_READY),
-app.demo_intake=0 y app.demo_plan_review=3 (espera de decision, no aprobacion).
+### Pendientes principales
 
-Pendiente bloqueante reproducido en test_nuclear_revision_advances_on_persisted_state_change:
-PLAN_EN_REVISION -> AUTORIZADA_PARA_EJECUTAR conserva record_version=4, contra la
-descripcion del contrato nuclear que exige incrementar cada modificacion.
-save_mission copia la version de aplicacion; tareas, referencias y autorizaciones
-tambien se vinculan a ella. No se incremento aisladamente, no se relajaron checks
-de obsolescencia ni se reescribieron registros aprobados para ocultar el defecto.
-El test falla normalmente (sin skip ni expectedFailure). Coherencia de revision
-nuclear completa NO corregida; requiere diseno y verificacion adicional autorizados.
+- `PENDIENTE_DE_EVIDENCIA_REAL`: ejecución controlada con Gemini/ADK y credenciales autorizadas.
+- `PENDIENTE_DE_EVIDENCIA_REAL`: build y despliegue observables en Cloud Run.
+- `PENDIENTE_DE_EVIDENCIA_REAL`: persistencia y recuperación contra Firestore y Cloud Storage reales.
+- `PENDIENTE`: matriz ejecutable que relacione todos los RF, RNF y CT aplicables con evidencia reproducible.
+- `PENDIENTE`: revisión independiente y aceptación humana integral; las aceptaciones registradas hasta ahora corresponden a piezas concretas.
 
-Descarga nativa pendiente: el navegador no permite fijar el destino autorizado.
-Se comprobaron dos entregas HTTP identicas por mision, sin escribir descargas.
-La skill de navegador se utilizo para controles visibles y capturas, no para
-atribuir aceptacion humana. No se declara MVP terminado ni aceptado. Revision
-independiente de Copilot y aceptacion humana siguen pendientes.
+## Historial de verificaciones — no representa el estado actual
 
-## Historico: primera correccion de integracion 2026-08-31 — CORRECCION_PARCIAL
+Los conteos siguientes se conservan únicamente como trazabilidad de ejecuciones
+anteriores. Fueron superados por la suite vigente de `308/308` y no deben usarse
+para describir el estado técnico actual:
 
-Los pendientes y conteos de esta seccion son el estado de aquella ronda, no el
-estado actual; se conservan como historial. La seccion excepcional anterior
-documenta el resultado posterior a la segunda ronda.
+- 2026-08-30: `231` pruebas pasaban en el corte de protocolo de release de esa fecha.
+- 2026-08-31: una ejecución de `258` pruebas terminó con 257 aprobadas y una falla.
+- 2026-08-31: una ejecución de `273` pruebas terminó con 272 aprobadas y una falla.
+- 2026-08-31: una entrega intermedia registró `294/294` pruebas.
+- 2026-08-31: el cierre técnico previo registró `307/307` pruebas.
 
-Encargo cerrado autorizado por Niko sobre una lista de 25 archivos; no constituye
-aceptacion del MVP, de piezas ni de dependencias. Las revisiones anteriores sin
-ediciones no cuentan como rondas. Esta intervencion es una correccion de integracion;
-no autoriza una ronda posterior ni reinicia contadores de piezas previas.
+<details>
+<summary><strong>Detalle técnico histórico del 2026-08-31 — no vigente</strong></summary>
 
-Decisiones tecnicas ratificadas para el runtime integrado:
+> **Advertencia:** este bloque resume cortes anteriores del 2026-08-31. No
+> describe defectos actuales confirmados, no reemplaza el resultado vigente de
+> `308/308` y no constituye una declaración de cierre o aceptación del MVP.
 
-- Cada solicitud de Plan y de VBP dura exactamente 300 segundos. Al llegar al
-  limite se rechaza; el plazo no caduca una decision ya concedida correctamente.
-  Renovacion solo por accion explicita, con ID nuevo y revision del candidato.
-- Un solo perfil de usuario local SIMULADA, emitido por el adaptador de arranque.
-  El contexto es una capacidad local del proceso; body, headers y agentes no
-  pueden emitirla. Ausencia de contexto: rechazo, sin permiso por defecto.
-  Host/Origin/CSRF son defensas adicionales, no autenticacion de produccion.
-- SQLite conserva solicitudes, candidatos, decisiones, ledger, llamadas y
-  reservas. La decision, consumo, estado, evento y checkpoint se confirman en una
-  sola transaccion. El replay verifica primero identidad y luego el comando exacto.
-- La API utiliza estado persistido; el simulador solo produce resultados.
-  No finaliza en la aprobacion: exportacion debe verificar aprobacion persistida,
-  version, contenido y originales sinteticos disponibles antes de finalizar.
-- Presupuesto compartido por la base del proyecto, microdolares reservados antes
-  de llamadas, aviso 70 %, bloqueo de llamadas al 90 %, techo 25 USD. Hasta
-  15 solicitudes por mision y dos intentos por tarea; un reintento transitorio.
-  Llamadas inciertas retienen reservas y no se repiten automaticamente.
-  Tarifas y consumo son SINTETICOS; no se consultaron precios ni modelos reales.
-- Los bloques English forman parte del string content permitido por el schema
-  antes de calcular huella. No se usa bilingual_content. El selector no traduce
-  despues de aprobar. Traduccion de entradas arbitrarias: PENDIENTE.
-- Se ajustaron fixtures que aceptaban identidad implicita, claves inventadas,
-  APROBAR_CON_CONDICIONES (fuera del enum), finalizacion prematura, estados de tarea
-  no contractuales, exportacion por una cadena ficticia o sobreconsumo como exito.
-  Se conservaron sus controles y se agregaron regresiones negativas ejecutables.
+### Perímetro y carácter de las correcciones
 
-Limitaciones pendientes que impiden declarar esta correccion completa:
+- La primera corrección de integración tuvo un perímetro cerrado de 25 archivos.
+  No constituyó aceptación del MVP, de sus piezas ni de sus dependencias.
+- Una intervención posterior fue autorizada excepcionalmente después de dos
+  rondas. Conservó los contadores anteriores y se limitó a 42 archivos existentes:
+  los 39 del perímetro previo más `contracts/core/event.schema.json`,
+  `tests/test_contracts.py` y `tests/test_five_agent_flow.py`, sin fuentes nuevas.
+  Esa autorización no reinició rondas ni autorizó otra intervención.
 
-- El evaluador en app/vbp_validation.py (fuera del perimetro autorizado) devuelve
-  un hallazgo de integridad referencial sin contexto junto con PASA. El adaptador
-  ahora convierte ese caso en NO_PASA con VALIDACION_REFERENCIAL_PENDIENTE.
-  Una excepcion exige motivo, condiciones y riesgos; nunca omite evidencia ausente.
-  Puntuacion y dictamen sinteticos no demuestran calidad real ni equivalencia
-  completa con todas las dimensiones del contrato.
-- El checkpoint integrado conserva snapshots de aplicacion; queda pendiente
-  probar la conformidad nuclear completa de eventos, checkpoints y sus referencias.
-- Memorias propuestas no se autoaprueban. El gestor de memoria existente conserva
-  su almacenamiento en memoria; no se afirma persistencia de memoria aprobada.
-- El presupuesto solo se comparte si las instancias usan LA MISMA base explicita;
-  bases distintas y gateways aislados :memory: no constituyen un ledger global.
-- UI ES/EN parcial: estados y bloques congelados son visibles; evidencia, auditoria
-  y entradas arbitrarias conservan idioma original, sin traduccion inventada.
-  La UI no recupera automaticamente el ID de la mision tras recargar la pagina.
-- La descarga nativa del navegador no se verifico: la herramienta no permite fijar
-  destino autorizado. Se verificaron bytes mediante router y HTTP loopback.
-- La ultima suite completa ejecuto 258 pruebas: 257 pasan y una falla en
-  tests/test_mission_controls.py, archivo NO autorizado para editar. Su fixture
-  crea dos misiones PAUSADA concurrentes; el control de mision unica rechaza la
-  segunda. Requiere decision sobre el fixture, sin relajar la restriccion.
-- La UI captura motivo, condiciones y riesgos mediante campos visibles, pues el
-  navegador integrado no admite prompt(). No depende de ese dialogo nativo.
-- Revisar independientemente con Copilot y someter pendientes a decision humana.
-  No hay OAuth, multiusuario, originales reales recuperados, modelos en vivo,
-  despliegue ni aceptacion humana implicita por tests o clics sinteticos.
+### Decisiones técnicas registradas en esos cortes
+
+- Las solicitudes de aprobación de Plan y VBP tenían TTL de 300 segundos. Al
+  vencer se rechazaban; renovarlas exigía una nueva acción humana, un ID nuevo y
+  revisar nuevamente el candidato. Una decisión ya concedida correctamente no
+  caducaba de forma retroactiva.
+- El contexto humano local era emitido por el adaptador de arranque y no podía
+  otorgarse mediante el body, headers o agentes. Host, Origin y CSRF eran defensas
+  adicionales, no autenticación de producción.
+- SQLite conservaba solicitudes, candidatos, decisiones, ledger, llamadas y
+  reservas. Decisión, consumo, estado, evento y checkpoint se confirmaban en una
+  transacción, y el replay validaba identidad y comando antes de devolver efectos.
+- El presupuesto histórico usaba un techo de USD 25, aviso al 70 %, bloqueo de
+  nuevas llamadas al 90 %, máximo de 15 solicitudes por misión, dos intentos por
+  tarea y un reintento transitorio. Las llamadas inciertas retenían la reserva y
+  no se repetían automáticamente. Tarifas y consumo seguían siendo sintéticos.
+- La entrega HTTP de bytes se distinguía de una descarga nativa: una escritura,
+  flush o persistencia fallida no finalizaba la misión. Las verificaciones de ese
+  corte demostraron bytes repetibles por HTTP, no que el usuario hubiera guardado
+  el archivo mediante una descarga nativa del navegador.
+
+### Limitaciones y resultados que pertenecían a esos cortes
+
+- La evaluación referencial podía recibir de `app/vbp_validation.py` un hallazgo
+  de integridad junto con `PASA`; el adaptador lo convertía en `NO_PASA` con
+  `VALIDACION_REFERENCIAL_PENDIENTE`. Los puntajes sintéticos no demostraban
+  calidad real ni cobertura completa del contrato.
+- Se documentó que faltaba demostrar la conformidad nuclear completa de eventos,
+  checkpoints y referencias. Un corte también registró memoria en proceso sin
+  prueba de persistencia; otro corte posterior registró pruebas de versionado y
+  persistencia. Estas observaciones cronológicas no describen el estado vigente.
+- La vista ES/EN era parcial: las entradas arbitrarias sin traducción conocida
+  quedaban pendientes, no existía traductor externo y la interfaz no recuperaba
+  automáticamente el ID de misión al recargar, aunque otro recorrido documentó
+  conservación de misión y memoria tras reiniciar el servidor.
+- La descarga nativa continuó sin demostrarse en esos cortes; solo se verificaron
+  los bytes mediante router y HTTP loopback.
+- Una suite de 258 pruebas terminó con 257 aprobadas y una falla porque un fixture
+  intentaba mantener dos misiones `PAUSADA` activas simultáneamente.
+- Una suite posterior de 273 pruebas terminó con 272 aprobadas y una falla porque
+  la transición `PLAN_EN_REVISION -> AUTORIZADA_PARA_EJECUTAR` no incrementaba
+  `record_version` como exigía el contrato nuclear de ese corte.
+- Pruebas verdes, controles visibles o clics sintéticos nunca se consideraron
+  aceptación humana. La revisión independiente y la decisión humana se mantenían
+  separadas de la evidencia automatizada.
+
+</details>
+
+Estos resultados históricos no significan cierre integral, preparación para
+producción, despliegue real ni aceptación humana del MVP completo.
 
 ## Estado de la Demostración Local (MODO SIMULADA)
 
 > [!NOTE]
-> Esta entrega local funciona en **MODO SIMULADA** para demostración del hackathon. Utiliza únicamente la biblioteca estándar de Python sin requerir frameworks externos ni dependencias de terceros para el servidor. No realiza llamadas en vivo a modelos externos en esta etapa.
+> Esta entrega local funciona en **MODO SIMULADA** para demostración del hackathon.
+> La capa de transporte HTTP local usa la biblioteca estándar de Python; el
+> runtime y la validación requieren Python 3.11 o posterior y
+> `jsonschema>=4.18,<5`. La demostración local no realiza llamadas en vivo a
+> modelos externos.
 
 - **Servidor HTTP Local**: Escucha exclusivamente en `http://127.0.0.1:8000` con validación estricta de Host y Origin, y protección contra solicitudes falsificadas (CSRF).
 - **Gobernanza Humana (Human-in-the-Loop)**:
@@ -163,13 +148,13 @@ Limitaciones pendientes que impiden declarar esta correccion completa:
 ## Pendientes y Estado de Aceptación
 
 - **No se declara el MVP completado ni aceptado definitivamente**.
-- Correccion de integracion parcial aplicada; pendientes arriba y revision independiente sin aceptacion implicita.
-- La integración en nube (Cloud Run / Gemini en vivo) y la aceptación humana de piezas corresponden a etapas posteriores.
+- La evidencia vigente es local y `SIMULADA`; los pendientes técnicos se enumeran arriba.
+- La integración real en nube (Gemini/ADK, Cloud Run, Firestore y Cloud Storage) y la aceptación humana integral corresponden a etapas posteriores; las aceptaciones existentes son por pieza.
 
 ## Requisitos locales
 
-- **Python**: 3.11 o posterior (biblioteca estándar).
-- **jsonschema**: `>=4.18,<5` (para la suite de pruebas automatizadas y metavalidación de contratos Draft 2020-12).
+- **Python**: 3.11 o posterior.
+- **jsonschema**: `>=4.18,<5` (requerido por el runtime, la validación y la suite de pruebas automatizadas para los contratos Draft 2020-12).
 
 ## Comando de Arranque del Servidor Local
 
