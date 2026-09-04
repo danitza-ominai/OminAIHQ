@@ -43,6 +43,12 @@ competition/
 examples/*
 !examples/demo_mission.json
 
+# Documentacion interna conservada solo como copia local
+/AGENTS.md
+/TEAM-WORKFLOW.md
+/CONTRATO-MVP-v1.md
+/ENTREGA.md
+
 
 # Archivos del sistema
 .DS_Store
