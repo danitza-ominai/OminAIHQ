@@ -6,11 +6,15 @@ conforme a CONTRATO-MVP-v1.md seccion 9, CT-014-016 y RF-001/006/016/019/025.
 """
 
 import json
+import re
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlsplit
 
 MAX_REQUEST_BODY_BYTES = 50 * 1024  # 50 KB
-ALLOWED_HOSTS = {"localhost", "127.0.0.1", "[::1]", "localhost:8000", "127.0.0.1:8000"}
-ALLOWED_ORIGINS = {"http://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:8000"}
+_LOCAL_AUTHORITY_RE = re.compile(
+    r"(?:localhost|127\.0\.0\.1|\[::1\])(?::([0-9]{1,5}))?",
+    re.IGNORECASE,
+)
 
 
 class APIContractError(Exception):
@@ -18,22 +22,71 @@ class APIContractError(Exception):
     pass
 
 
-def validate_request_security(headers: Dict[str, str]) -> Tuple[bool, Optional[str]]:
-    """Valida que la solicitud provenga de origen loopback seguro y no de cross-origin no autorizado."""
-    # Normalizar headers a minusculas
+def _valid_port(raw_port: Optional[str]) -> bool:
+    return raw_port is None or 1 <= int(raw_port) <= 65535
+
+
+def is_loopback_authority(authority: Optional[str]) -> bool:
+    """Acepta solo localhost/IPv4/IPv6 loopback y un puerto TCP valido opcional."""
+    if not isinstance(authority, str):
+        return False
+    match = _LOCAL_AUTHORITY_RE.fullmatch(authority)
+    return bool(match and _valid_port(match.group(1)))
+
+
+def is_loopback_origin(origin: Optional[str]) -> bool:
+    """Valida un Origin HTTP serializado, sin ruta, credenciales ni partes extra."""
+    if not isinstance(origin, str) or not origin:
+        return False
+    try:
+        parsed = urlsplit(origin)
+        parsed_port = parsed.port
+    except ValueError:
+        return False
+    return (
+        parsed.scheme.lower() == "http"
+        and parsed.username is None
+        and parsed.password is None
+        and parsed.path == ""
+        and not parsed.query
+        and not parsed.fragment
+        and is_loopback_authority(parsed.netloc)
+        and (parsed_port is None or 1 <= parsed_port <= 65535)
+    )
+
+
+def validate_local_request_security(headers: Dict[str, str]) -> Tuple[bool, Optional[str]]:
+    """Valida Host y Origin para el adaptador local exclusivamente loopback."""
     norm_headers = {k.lower(): v for k, v in headers.items()}
-
-    # 1. Validar Host
     host = norm_headers.get("host")
-    if not host or host not in ALLOWED_HOSTS:
+    if not is_loopback_authority(host):
         return False, f"HOST_INVALIDO: El host '{host}' no es loopback local autorizado."
-
-    # 2. Validar Origin (si esta presente en navegadores)
     origin = norm_headers.get("origin")
-    if origin and origin not in ALLOWED_ORIGINS:
+    if origin and not is_loopback_origin(origin):
         return False, f"CROSS_ORIGIN_PROHIBIDO: Origen '{origin}' no autorizado para la API local."
-
     return True, None
+
+
+def validate_cloud_request_security(
+    headers: Dict[str, str],
+    allowed_hosts: set[str],
+    allowed_origins: set[str],
+) -> Tuple[bool, Optional[str]]:
+    """Valida allowlists cloud exactas; una configuracion vacia falla cerrado."""
+    norm_headers = {k.lower(): v for k, v in headers.items()}
+    host = norm_headers.get("host")
+    configured_hosts = {value.casefold() for value in allowed_hosts if value}
+    if not isinstance(host, str) or host.casefold() not in configured_hosts:
+        return False, f"HOST_INVALIDO: El host '{host}' no esta configurado para Cloud Run."
+    origin = norm_headers.get("origin")
+    configured_origins = {value.casefold() for value in allowed_origins if value}
+    if origin and origin.casefold() not in configured_origins:
+        return False, f"CROSS_ORIGIN_PROHIBIDO: Origen '{origin}' no autorizado para Cloud Run."
+    return True, None
+
+
+# Compatibilidad interna: el validador sin calificador siempre conserva semantica local.
+validate_request_security = validate_local_request_security
 
 
 def validate_request_body_size(raw_bytes: bytes) -> Tuple[bool, Optional[str]]:
