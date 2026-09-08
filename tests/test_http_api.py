@@ -26,6 +26,16 @@ class TestHTTPAPI(unittest.TestCase):
         self.assertEqual(data["version"],app.__version__)
         self.assertEqual(data["mode"],"SIMULADA")
         self.assertEqual(self.router.dispatch("POST",self.base,self.headers,b"x"*51201)[0],413)
+    def test_local_loopback_hosts_and_ports_are_strictly_validated(self):
+        for host in ("localhost", "LOCALHOST:8080", "127.0.0.1:49152", "[::1]:65535"):
+            headers={**self.headers,"Host":host,"Origin":"http://127.0.0.1:32768"}
+            self.assertEqual(self.call("GET","/health",headers=headers)[0],200,host)
+        for host in ("localhost:0", "localhost:65536", "localhost:", "127.0.0.2:8000",
+                     "localhost.evil.test", "user@localhost:8000", "[::1", " localhost:8000"):
+            self.assertEqual(self.call("GET","/health",headers={**self.headers,"Host":host})[0],403,host)
+        for origin in ("https://localhost:8000", "http://evil.test", "http://localhost:0",
+                       "http://localhost:65536", "http://user@localhost:8000", "http://localhost:8000/path"):
+            self.assertEqual(self.call("GET","/health",headers={**self.headers,"Origin":origin})[0],403,origin)
     def test_ac02_cross_origin_and_agent_actor_rejection(self):
         before=list(self.repo._conn.iterdump())
         for headers in ({**self.headers,"Origin":"http://evil.test"},{**self.headers,"Host":"evil.test"},
@@ -159,6 +169,55 @@ class TestHTTPAPI(unittest.TestCase):
         self.assertEqual(self.call('GET',self.base+'/vbp/export')[2],fresh[2])
 
 class TestBoundedHTTPBody(unittest.TestCase):
+    def test_ephemeral_loopback_server_reports_bound_port(self):
+        from test_human_approvals import fixture
+        from app.http_api import LocalAPIRouter, create_local_server
+        runtime,repo,ctx,_=fixture()
+        router=LocalAPIRouter(runtime,local_context=ctx)
+        server=create_local_server("127.0.0.1",0,router)
+        try:
+            code,_,body=router.dispatch("GET","/health",{"Host":f"127.0.0.1:{server.server_port}"})
+            self.assertEqual(code,200)
+            self.assertEqual(json.loads(body)["data"]["port"],server.server_port)
+        finally:
+            server.server_close();repo.close()
+
+    def test_ephemeral_ipv6_loopback_server_reports_bound_port(self):
+        import http.client
+        import socket
+        import threading
+        from test_human_approvals import fixture
+        from app.http_api import LocalAPIRouter, create_local_server
+
+        if not socket.has_ipv6:
+            self.skipTest("El sistema operativo no informa soporte IPv6.")
+        probe=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+        try:
+            probe.bind(("::1",0))
+        except OSError as exc:
+            self.skipTest(f"IPv6 loopback no esta disponible: {exc}")
+        finally:
+            probe.close()
+
+        runtime,repo,ctx,_=fixture()
+        router=LocalAPIRouter(runtime,local_context=ctx)
+        server=create_local_server("::1",0,router)
+        server.timeout=2
+        thread=threading.Thread(target=server.handle_request,daemon=True)
+        try:
+            thread.start()
+            connection=http.client.HTTPConnection("::1",server.server_port,timeout=2)
+            try:
+                connection.request("GET","/health",headers={"Host":f"[::1]:{server.server_port}"})
+                response=connection.getresponse()
+                body=response.read()
+            finally:
+                connection.close()
+            self.assertEqual(response.status,200)
+            self.assertEqual(json.loads(body)["data"]["port"],server.server_port)
+        finally:
+            server.server_close();thread.join(timeout=2);repo.close()
+
     def test_invalid_lengths_never_read_payload(self):
         from email.message import Message
         from unittest.mock import Mock

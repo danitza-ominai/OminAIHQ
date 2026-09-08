@@ -19,6 +19,10 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
 
 
+class _IPv6HTTPServer(http.server.HTTPServer):
+    address_family = socket.AF_INET6
+
+
 class PreparedDownload(tuple):
     """Preparation is not delivery. The server invokes the private completion hook.
 
@@ -32,10 +36,21 @@ class PreparedDownload(tuple):
 
 
 class LocalAPIRouter:
-    def __init__(self, runtime=None, web_dir=None, demo_policy_manager=None, *, local_context=None):
+    def __init__(
+        self,
+        runtime=None,
+        web_dir=None,
+        demo_policy_manager=None,
+        *,
+        local_context=None,
+        listen_port=DEFAULT_PORT,
+        allowed_origins=None,
+    ):
         self.runtime = runtime or hq_runtime.HQRuntime()
         self.web_dir = web_dir or STATIC_WEB_DIR
         self.local_context = local_context
+        self.listen_port = listen_port
+        self.allowed_origins = allowed_origins
         self.csrf_token = secrets.token_urlsafe(32)
 
     def response(self, code, data=None, error=None):
@@ -51,13 +66,16 @@ class LocalAPIRouter:
         return self.response(code, error=error)
 
     def dispatch(self, method, path, headers, body_bytes=b""):
-        ok, err = api_contracts.validate_request_security(headers)
+        ok, err = api_contracts.validate_local_request_security(headers)
         if not ok:
             return self.response(403, error=err)
         ok, err = api_contracts.validate_request_body_size(body_bytes)
         if not ok:
             return self.response(413, error=err)
         headers = {k.lower(): v for k, v in headers.items()}
+        return self._dispatch_validated(method, path, headers, body_bytes, self.local_context)
+
+    def _dispatch_validated(self, method, path, headers, body_bytes, request_context):
         try:
             if method == "GET" and path in ("/", "/index.html", "/styles.css", "/app.js", "/i18n.js"):
                 filename = "index.html" if path == "/" else path[1:]
@@ -67,24 +85,25 @@ class LocalAPIRouter:
                              "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"}, file.read_bytes()
         except Exception:
             return self.response(500, error="SYSTEM_ERROR: Recurso local no disponible.")
-        return self._dispatch_api(method, path, headers, body_bytes)
+        return self._dispatch_api(method, path, headers, body_bytes, request_context)
 
-    def _dispatch_api(self, method, path, headers, body_bytes):
+    def _dispatch_api(self, method, path, headers, body_bytes, request_context=None):
         try:
             if method == "GET" and path == "/health":
-                return self.response(200, {"status": "UP", "mode": "SIMULADA", "version": __version__, "port": 8000})
+                return self.response(200, {"status": "UP", "mode": "SIMULADA", "version": __version__, "port": self.listen_port})
             if any(k in headers for k in ("x-ominai-actor-role", "x-ominai-user-id")):
                 return self.response(403, error="PERMISSION_DENIED: Headers de identidad no otorgan autoridad.")
-            if not self.runtime.approvals.check_context(self.local_context):
+            if not self.runtime.approvals.check_context(request_context):
                 return self.response(403, error="PERMISSION_DENIED: Falta contexto humano local valido.")
             if method == "GET" and path == "/api/v1/session":
                 return self.response(200, {"csrf_token": self.csrf_token, "mode": "SIMULADA"})
             if method == 'GET' and path == '/api/v1/missions/current':
-                return self.response(200, self.runtime.repository.current_mission_for_owner(self.local_context.user_id))
+                return self.response(200, self.runtime.repository.current_mission_for_owner(request_context.user_id))
             if method == 'GET' and path == '/api/v1/demo-template':
                 return self.response(200, {'fields':vbp_document.prepared_demo_fields(), 'english':vbp_document.DEMO_TEXT_EN})
             if method in ("POST", "DELETE", "PUT", "PATCH"):
-                if (headers.get("origin") not in api_contracts.ALLOWED_ORIGINS
+                if ((self.allowed_origins is not None and headers.get("origin") not in self.allowed_origins)
+                    or (self.allowed_origins is None and not api_contracts.is_loopback_origin(headers.get("origin")))
                     or not secrets.compare_digest(headers.get("x-ominai-csrf", ""), self.csrf_token)):
                     return self.response(403, error="PERMISSION_DENIED: Proteccion CSRF requerida.")
                 if body_bytes and headers.get("content-type", "").split(";")[0] != "application/json":
@@ -97,7 +116,7 @@ class LocalAPIRouter:
                 return self.response(400, error="INVALID_INPUT: JSON debe ser un objeto.")
             if any(k in body for k in ("actor_role", "actor_user_id", "user_id", "actor_context", "context_humano")):
                 return self.response(403, error="PERMISSION_DENIED: Identidad declarada no autorizada.")
-            ctx = self.local_context
+            ctx = request_context
             if method == "GET" and path == "/api/v1/profile":
                 profile = self.runtime.repository.get_profile(ctx.user_id)
                 if not profile:
@@ -305,17 +324,21 @@ class OminAIHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 
 def create_local_server(host=DEFAULT_HOST, port=DEFAULT_PORT, router=None):
-    if host != DEFAULT_HOST or port != DEFAULT_PORT:
-        raise ValueError("Solo 127.0.0.1:8000 esta autorizado.")
+    if host not in ("localhost", "127.0.0.1", "::1") or type(port) is not int or not 0 <= port <= 65535:
+        raise ValueError("Solo loopback y un puerto TCP valido estan autorizados.")
     if router is None:
         raise ValueError("Configure explicitamente repositorio y adaptador local.")
     handler = type("IsolatedLocalHandler", (OminAIHTTPRequestHandler,), {"router": router})
-    return http.server.HTTPServer((host, port), handler)
+    server_class = _IPv6HTTPServer if host == "::1" else http.server.HTTPServer
+    server = server_class((host, port), handler)
+    router.listen_port = server.server_port
+    return server
 
 
 def run_local_server(host=DEFAULT_HOST, port=DEFAULT_PORT, router=None):
     server = create_local_server(host, port, router)
-    print("OminAI HQ - SIMULADA - http://127.0.0.1:8000", flush=True)
+    display_host = "[::1]" if host == "::1" else host
+    print(f"OminAI HQ - SIMULADA - http://{display_host}:{server.server_port}", flush=True)
     server.timeout = 0.5
     deadline = time.monotonic() + 45 * 60
     try:
