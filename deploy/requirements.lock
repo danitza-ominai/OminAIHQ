@@ -1,4 +1,5 @@
 ﻿# Resolved with uv 0.11.29; direct inputs: google-adk==2.8.0, jsonschema==4.23.0.
+# google-auth[requests]==2.57.0 is also a direct project dependency for signed IAP verification.
 # Target: CPython 3.11 on x86_64 manylinux_2_17. Hashes emitted for reproducible install.
 aiohappyeyeballs==2.7.1 \
     --hash=sha256:065665c041c42a5938ed220bdcd7230f22527fbec085e1853d2402c8a3615d9d \
@@ -649,6 +650,7 @@ google-auth==2.57.0 \
     --hash=sha256:180dafe015cfb62193bea26b677500fab5b9fd51a1e825ebf3ad9b182047ae59 \
     --hash=sha256:9b4f96d6a1feb5f7201231f47cfb3de08d8f176f8a61f9e461555116e95a8789
     # via
+    #   direct project dependency
     #   google-adk
     #   google-genai
 google-genai==2.20.0 \
